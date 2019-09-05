@@ -57,15 +57,15 @@ We should see `a`, `b` and `c`. If you try to recover the value of a variable th
 
 Now since these values are saved in variables, to obtain a solution to our equation, we use the quadratic formula:
 ```{r}
-(-b + sqrt(b^2 - 4*a*c) ) / ( 2*a )
-(-b - sqrt(b^2 - 4*a*c) ) / ( 2*a )
+(-b + \sqrt(b^2 - 4*a*c) ) / ( 2*a )
+(-b - \sqrt(b^2 - 4*a*c) ) / ( 2*a )
 ```
 
 ### 3.2.3 Functions
 
 Once you define variables, the data analysis process can usually be described as a series of functions applied to the data. R includes several predefined functions and most of the analysis pipelines we construct make extensive use of these.
 
-We already used the `install.packages`, `library`, and `ls` functions. We also used the function `sqrt` to solve the quadratic equation above. There are many more prebuilt functions and even more can be added through packages. These functions do not appear in the workspace because you did not define them, but they are available for immediate use.
+We already used the `install.packages`, `library`, and `ls` functions. We also used the function `\sqrt` to solve the quadratic equation above. There are many more prebuilt functions and even more can be added through packages. These functions do not appear in the workspace because you did not define them, but they are available for immediate use.
 
 In general, we need to use parentheses to evaluate a function. If you type `ls`, the function is not evaluated and instead R shows you the code that defines the function. If you type `ls()` the function is evaluated and, as seen above, we see objects in the workspace.
 
@@ -164,8 +164,8 @@ We have used the letters `a`, `b` and `c` as variable names, but variable names 
 
 A nice convention to follow is to use meaningful words that describe what is stored, use only lower case, and use underscores as a substitute for spaces. For the quadratic equations, we could use something like this:
 ```{r}
-solution_1 <- (-b + sqrt(b^2 - 4*a*c)) / (2*a)
-solution_2 <- (-b - sqrt(b^2 - 4*a*c)) / (2*a)
+solution_1 <- (-b + \sqrt(b^2 - 4*a*c)) / (2*a)
+solution_2 <- (-b - \sqrt(b^2 - 4*a*c)) / (2*a)
 ```
 
 For more advice, we highly recomment studying [Hadley Wickham`s style guide](http://adv-r.had.co.nz/Style.html).
@@ -183,8 +183,8 @@ To solve another equation such as $3x^2+2x-1$, we can copy and paste the code ab
 a <- 3
 b <- 2
 c <- -1
-(-b + sqrt(b^2 - 4*a*c)) / (2*a)
-(-b - sqrt(b^2 - 4*a*c)) / (2*a)
+(-b + \sqrt(b^2 - 4*a*c)) / (2*a)
+(-b - \sqrt(b^2 - 4*a*c)) / (2*a)
 ```
 
 By creating and saving a script with the code above, we would not need to retype everything each time and, instead, simply change the variable names. Try writing the script above into an editor and notice how easy it is to change the variables and receive an answer.
@@ -201,8 +201,8 @@ b <- 2
 c <- -1
 
 ## now compute the solution
-(-b + sqrt(b^2 - 4*a*c)) / (2*a)
-(-b - sqrt(b^2 - 4*a*c)) / (2*a)
+(-b + \sqrt(b^2 - 4*a*c)) / (2*a)
+(-b - \sqrt(b^2 - 4*a*c)) / (2*a)
 ```
 
 # 3.3 Exercises
@@ -229,20 +229,22 @@ sum(x)
 Based on the result, what do you think the functions `seq` and `sum` do? You can use the `help` system:
 
 A. `sum` creates a list of numbers and `seq` adds them up.
-B. `seq` creates a list of numbers and `sum` adds them up. `**answer**`
+B. `seq` creates a list of numbers and `sum` adds them up. **`answer`**
+
 C. `seq` computes the difference between two arguments and `sum` computes the sum of 1 through 1000.  
 D. `sum` always returns the same number.
 
-4. In math and programming, we say that we evaluate a function when we replace the argument with a given number. So if we type `sqrt(4)`, we evaluate the `sqrt` function. In R, you can evaluate a function inside another function. The evaluations happen from the inside out. Use one line of code to compute the log, in base 10, of the square root of 100.
+4. In math and programming, we say that we evaluate a function when we replace the argument with a given number. So if we type `\sqrt(4)`, we evaluate the `\sqrt` function. In R, you can evaluate a function inside another function. The evaluations happen from the inside out. Use one line of code to compute the log, in base 10, of the square root of 100.
 ```{r}
-log(sqrt(100),10)
+log(\sqrt(100),10)
 ```
 
 5. Which of the following will always return the numeric value stored in `x`? You can try out examples and use the help system if you want.
 
 A. log(10^x)  
 B. log10(x^10)  
-C. log(exp(x)) `**answer**`
+C. log(exp(x)) **`answer`**
+
 D. exp(log(x, base = 2))  
 
 # 3.4 Data types
