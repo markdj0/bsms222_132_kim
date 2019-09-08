@@ -3,8 +3,8 @@ title: "rbasic_20190911_132_kim"
 output: html_notebook
 ---
 
-<li class="rbasic_20190906_132_kim" data-level="" data-path="rbasic_20190906_132_kim.nb.html"><a href="rbasic_20190906_132_kim.nb.html"><i class="fa fa-check"></i>rbasic_20190906_132_kim</a></li>
-<li class="rbasic_20190909_132_kim" data-level="" data-path="rbasic_20190909_132_kim.nb.html"><a href="rbasic_20190909_132_kim.nb.html"><i class="fa fa-check"></i>rbasic_20190909_132_kim</a></li>
+* [rbasic_20190906_132_kim](rbasic_20190906_132_kim.nb.html)
+* [rbasic_20190909_132_kim](rbasic_20190909_132_kim.nb.html)
 
 # Chapter 4 Programming basics
 
