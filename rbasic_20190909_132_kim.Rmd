@@ -744,7 +744,7 @@ tgm <- log(total_gun_murders, 10)
 plot(pim, tgm)
 ```
 
-2.Create a histogram of the state populations.
+2. Create a histogram of the state populations.
 ```{r}
 mp <- with(murders, population)
 hist(mp)
