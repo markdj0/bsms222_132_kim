@@ -3,7 +3,7 @@ title: "programmingbasics_20190916_132_kim"
 output: html_notebook
 ---
 
-* [Previous](https://github.com/markdj0/bsms222_132_kim/blob/master/README.md)
+* [Previous](previous.nb.html)
 
 ## 4.4 For-loops
 
