@@ -3,9 +3,7 @@ title: "programmingbasics_20190916_132_kim"
 output: html_notebook
 ---
 
-* [rbasic_20190906_132_kim](rbasic_20190906_132_kim.nb.html)
-* [rbasic_20190909_132_kim](rbasic_20190909_132_kim.nb.html)
-* [programmingbasics_20190911_132_kim](programmingbasics_20190911_132_kim.nb.html)
+* [Previous](README.md)
 
 ## 4.4 For-loops
 
