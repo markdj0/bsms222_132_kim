@@ -3,6 +3,10 @@ title: "programmingbasics_20190916_132_kim"
 output: html_notebook
 ---
 
+* [rbasic_20190906_132_kim](rbasic_20190906_132_kim.nb.html)
+* [rbasic_20190909_132_kim](rbasic_20190909_132_kim.nb.html)
+* [programmingbasics_20190911_132_kim](programmingbasics_20190911_132_kim.nb.html)
+
 ## 4.4 For-loops
 
 The formula for the sum of the series $1+2+\cdots+n$ is $n(n+1)/2$. What if we weren’t sure that was the right function? How could we check? Using what we learned about functions we can create one that computes the $S_n$
