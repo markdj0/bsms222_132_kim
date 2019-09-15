@@ -1,6 +1,3 @@
----
-output: html_notebook
----
 
 # bsms222_132_kim
 
