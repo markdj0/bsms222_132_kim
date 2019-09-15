@@ -1,3 +1,5 @@
+output: html_notebook
+
 # bsms222_132_kim
 
 * [Chapter 3 (9/6)](rbasic_20190906_132_kim.nb.html)
