@@ -1,5 +1,5 @@
 
-# Previous Assignments of bsms222_132_kim
+# Previous Assignments
 
 * [Chapter 3 (9/6)](rbasic_20190906_132_kim.nb.html)
 * [Chapter 3 (9/9)](rbasic_20190909_132_kim.nb.html)
