@@ -2,7 +2,7 @@
 output: html_notebook
 ---
 
-* [Previous](previous.nb.html)
+* [Previous](https://markdj0.github.io/bsms222_132_kim/)
 
 # Chapter 5 The tidyverse
 
