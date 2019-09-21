@@ -1,8 +1,10 @@
 ---
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
-* [Previous](https://markdj0.github.io/bsms222_132_kim/)
+> [Previous](https://markdj0.github.io/bsms222_132_kim/)
 
 # Chapter 5 The tidyverse
 
