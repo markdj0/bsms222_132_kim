@@ -1752,7 +1752,26 @@ summary {
 <li><a href="#summarize">5.7.1 <code>summarize</code></a></li>
 <li><a href="#pull">5.7.2 <code>pull</code></a></li>
 <li><a href="#group-then-summarize-with-group_by">5.7.3 Group then summarize with <code>group_by</code></a></li>
+<li><a href="#sorting-data-frames">5.8 Sorting data frames</a></li>
+<li><a href="#nested-sorting">5.8.1 Nested sorting</a></li>
+<li><a href="#the-top-n">5.8.2 The top <span class="math inline">\(n\)</span></a></li>
 </ul></li>
+<li><a href="#exercises">5.9 Exercises</a></li>
+<li><a href="#tibbles">5.10 Tibbles</a><ul>
+<li><a href="#tibbles-display-better">5.10.1 Tibbles display better</a></li>
+<li><a href="#subsets-of-tibbles-are-tibbles">5.10.2 Subsets of tibbles are tibbles</a></li>
+<li><a href="#tibbles-can-have-complex-entries">5.10.3 Tibbles can have complex entries</a></li>
+<li><a href="#tibbles-can-be-grouped">5.10.4 Tibbles can be grouped</a></li>
+<li><a href="#create-a-tibble-using-data_frame-instead-of-data.frame">5.10.5 Create a tibble using <code>data_frame</code> instead of <code>data.frame</code></a></li>
+</ul></li>
+<li><a href="#the-dot-operator">5.11 The dot operator</a></li>
+<li><a href="#do">5.12 <code>do</code></a></li>
+<li><a href="#the-purrr-package">5.13 The purrr package</a></li>
+<li><a href="#tidyverse-conditionals">5.14 Tidyverse conditionals</a><ul>
+<li><a href="#case_when">5.14.1 <code>case_when</code></a></li>
+<li><a href="#between">5.14.2 <code>between</code></a></li>
+</ul></li>
+<li><a href="#exercises-1">5.15 Exercises</a></li>
 </ul>
 </div>
 
@@ -1768,6 +1787,12 @@ summary {
 <p>The <code>summarize</code> function in <strong>dplyr</strong> provides a way to compute summary statistics with intuitive and readable code. We start with a simple example based on heights. The <code>heights</code> dataset includes heights and sex reported by students in an in-class survey.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaW5zdGFsbC5wYWNrYWdlcyhkcGx5cilcbmBgYCJ9 -->
+<pre class="r"><code>install.packages(dplyr)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gaW5zdGFsbC5wYWNrYWdlcyA6IG9iamVjdCAnZHBseXInIG5vdCBmb3VuZFxuIn0= -->
+<pre><code>Error in install.packages : object 'dplyr' not found</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShkcGx5cilcbmxpYnJhcnkoZHNsYWJzKVxuZGF0YShoZWlnaHRzKVxuYGBgIn0= -->
 <pre class="r"><code>library(dplyr)
 library(dslabs)
@@ -1811,10 +1836,11 @@ s</code></pre>
 <p>As with most other dplyr functions, summarize is aware of the variable names and we can use them directly. So when inside the call to the summarize function we write mean(height), the function is accessing the column with the name “height” and then computing the average of the resulting numeric vector. We can compute any other summary that operates on vectors and returns a single value. For example, we can add the median, min and max heights like this:</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaGVpZ2h0cyAlPiUgXG4gIGZpbHRlcihzZXggPT0gXCJGZW1hbGVcIikgJT4lXG4gIHN1bW1hcml6ZShtZWRpYW4gPSBtZWRpYW4oaGVpZ2h0KSwgbWluaW11bSA9IG1pbihoZWlnaHQpLCBtYXhpbXVtID0gbWF4KGhlaWdodCkpXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaGVpZ2h0cyAlPiUgXG4gIGZpbHRlcihzZXggPT0gXCJGZW1hbGVcIikgJT4lXG4gIHN1bW1hcml6ZShtZWRpYW4gPSBtZWRpYW4oaGVpZ2h0KSwgbWluaW11bSA9IG1pbihoZWlnaHQpLCBtYXhpbXVtID0gbWF4KGhlaWdodCkpXG5cbmBgYCJ9 -->
 <pre class="r"><code>heights %&gt;% 
   filter(sex == &quot;Female&quot;) %&gt;%
-  summarize(median = median(height), minimum = min(height), maximum = max(height))</code></pre>
+  summarize(median = median(height), minimum = min(height), maximum = max(height))
+</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-output-begin eyJkYXRhIjoiICAgIG1lZGlhbiBtaW5pbXVtIG1heGltdW1cbjEgNjQuOTgwMzEgICAgICA1MSAgICAgIDc5XG4ifQ== -->
 <pre><code>    median minimum maximum
@@ -1840,13 +1866,18 @@ s</code></pre>
 <p>For another example of how we can use the <code>summarize</code> function, let’s compute the average murder rate for the United States. Remember our data table includes total murders and population size for each state and we have already used <strong>dplyr</strong> to add a murder rate column:</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YShtdXJkZXJzKVxubXVyZGVycyA8LSBtdXJkZXJzICU+JSBtdXRhdGUocmF0ZSA9IHRvdGFsL3BvcHVsYXRpb24qMTAwMDAwKVxuYGBgIn0= -->
+<pre class="r"><code>data(murders)
+murders &lt;- murders %&gt;% mutate(rate = total/population*100000)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Remember that the US murder rate is not the average of the state murder rates:</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3VtbWFyaXplKG11cmRlcnMsIG1lYW4ocmF0ZSkpXG5gYGAifQ== -->
-<pre class="r"><code>summarize(murders, mean(rate))</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3VtbWFyaXplKG11cmRlcnMsIG1lYW4ocmF0ZSkpXG5cbmBgYCJ9 -->
+<pre class="r"><code>summarize(murders, mean(rate))
+</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-output-begin eyJkYXRhIjoiICBtZWFuKHJhdGUpXG4xICAgMi43NzkxMjVcbiJ9 -->
 <pre><code>  mean(rate)
@@ -1874,9 +1905,8 @@ s</code></pre>
 <p>The <code>us_murder_rate</code> object defined above represents just one number. Yet we are storing it in a data frame:</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2xhc3ModXNfbXVyZGVyX3JhdGUpXG5cbmBgYCJ9 -->
-<pre class="r"><code>class(us_murder_rate)
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2xhc3ModXNfbXVyZGVyX3JhdGUpXG5gYGAifQ== -->
+<pre class="r"><code>class(us_murder_rate)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiZGF0YS5mcmFtZVwiXG4ifQ== -->
 <pre><code>[1] &quot;data.frame&quot;</code></pre>
@@ -1928,52 +1958,971 @@ s</code></pre>
 <p>If we type this:</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaGVpZ2h0cyAlPiUgZ3JvdXBfYnkoc2V4KVxuYGBgIn0= -->
-<pre class="r"><code>heights %&gt;% group_by(sex)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaGVpZ2h0cyAlPiUgZ3JvdXBfYnkoc2V4KVxuXG5gYGAifQ== -->
+<pre class="r"><code>heights %&gt;% group_by(sex)
+</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiXHUwMDFiWzkwbSMgQSB0aWJibGU6IDEsMDUwIHggMlx1MDAxYlszOW1cblx1MDAxYls5MG0jIEdyb3VwczogICBzZXggWzJdXHUwMDFiWzM5bVxuICAgc2V4ICAgIGhlaWdodFxuICAgXHUwMDFiWzNtXHUwMDFiWzkwbTxmY3Q+XHUwMDFiWzM5bVx1MDAxYlsyM20gICBcdTAwMWJbM21cdTAwMWJbOTBtPGRibD5cdTAwMWJbMzltXHUwMDFiWzIzbVxuXHUwMDFiWzkwbSAxXHUwMDFiWzM5bSBNYWxlICAgICAgIDc1XG5cdTAwMWJbOTBtIDJcdTAwMWJbMzltIE1hbGUgICAgICAgNzBcblx1MDAxYls5MG0gM1x1MDAxYlszOW0gTWFsZSAgICAgICA2OFxuXHUwMDFiWzkwbSA0XHUwMDFiWzM5bSBNYWxlICAgICAgIDc0XG5cdTAwMWJbOTBtIDVcdTAwMWJbMzltIE1hbGUgICAgICAgNjFcblx1MDAxYls5MG0gNlx1MDAxYlszOW0gRmVtYWxlICAgICA2NVxuXHUwMDFiWzkwbSA3XHUwMDFiWzM5bSBGZW1hbGUgICAgIDY2XG5cdTAwMWJbOTBtIDhcdTAwMWJbMzltIEZlbWFsZSAgICAgNjJcblx1MDAxYls5MG0gOVx1MDAxYlszOW0gRmVtYWxlICAgICA2NlxuXHUwMDFiWzkwbTEwXHUwMDFiWzM5bSBNYWxlICAgICAgIDY3XG5cdTAwMWJbOTBtIyDigKYgd2l0aCAxLDA0MCBtb3JlIHJvd3NcdTAwMWJbMzltXG4ifQ== -->
-<pre><code>[90m# A tibble: 1,050 x 2[39m
-[90m# Groups:   sex [2][39m
+<!-- rnb-output-begin eyJkYXRhIjoiIyBBIHRpYmJsZTogMSwwNTAgeCAyXG4jIEdyb3VwczogICBzZXggWzJdXG4gICBzZXggICAgaGVpZ2h0XG4gICA8ZmN0PiAgIDxkYmw+XG4gMSBNYWxlICAgICAgIDc1XG4gMiBNYWxlICAgICAgIDcwXG4gMyBNYWxlICAgICAgIDY4XG4gNCBNYWxlICAgICAgIDc0XG4gNSBNYWxlICAgICAgIDYxXG4gNiBGZW1hbGUgICAgIDY1XG4gNyBGZW1hbGUgICAgIDY2XG4gOCBGZW1hbGUgICAgIDYyXG4gOSBGZW1hbGUgICAgIDY2XG4xMCBNYWxlICAgICAgIDY3XG4jIOKApiB3aXRoIDEsMDQwIG1vcmUgcm93c1xuIn0= -->
+<pre><code># A tibble: 1,050 x 2
+# Groups:   sex [2]
    sex    height
-   [3m[90m&lt;fct&gt;[39m[23m   [3m[90m&lt;dbl&gt;[39m[23m
-[90m 1[39m Male       75
-[90m 2[39m Male       70
-[90m 3[39m Male       68
-[90m 4[39m Male       74
-[90m 5[39m Male       61
-[90m 6[39m Female     65
-[90m 7[39m Female     66
-[90m 8[39m Female     62
-[90m 9[39m Female     66
-[90m10[39m Male       67
-[90m# … with 1,040 more rows[39m</code></pre>
+   &lt;fct&gt;   &lt;dbl&gt;
+ 1 Male       75
+ 2 Male       70
+ 3 Male       68
+ 4 Male       74
+ 5 Male       61
+ 6 Female     65
+ 7 Female     66
+ 8 Female     62
+ 9 Female     66
+10 Male       67
+# … with 1,040 more rows</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>The result does not look very different from <code>heights</code>, except we see <code>Groups: sex [2]</code> when we print the object. Although not immediately obvious from its appearance, this is now a special data frame called a <em>grouped data frame</em> and <strong>dplyr</strong> functions, in particular <code>summarize</code>, will behave differently when acting on this object. Conceptually, you can think of this table as many tables, with the same columns but not necessarily the same number of rows, stacked together in one object. When we summarize the data after grouping, this is what happens:</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaGVpZ2h0cyAlPiUgXG4gIGdyb3VwX2J5KHNleCkgJT4lXG4gIHN1bW1hcml6ZShhdmVyYWdlID0gbWVhbihoZWlnaHQpLCBzdGFuZGFyZF9kZXZpYXRpb24gPSBzZChoZWlnaHQpKVxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaGVpZ2h0cyAlPiUgXG4gIGdyb3VwX2J5KHNleCkgJT4lXG4gIHN1bW1hcml6ZShhdmVyYWdlID0gbWVhbihoZWlnaHQpLCBzdGFuZGFyZF9kZXZpYXRpb24gPSBzZChoZWlnaHQpKVxuXG5gYGAifQ== -->
 <pre class="r"><code>heights %&gt;% 
   group_by(sex) %&gt;%
-  summarize(average = mean(height), standard_deviation = sd(height))</code></pre>
+  summarize(average = mean(height), standard_deviation = sd(height))
+</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiXHUwMDFiWzkwbSMgQSB0aWJibGU6IDIgeCAzXHUwMDFiWzM5bVxuICBzZXggICAgYXZlcmFnZSBzdGFuZGFyZF9kZXZpYXRpb25cbiAgXHUwMDFiWzNtXHUwMDFiWzkwbTxmY3Q+XHUwMDFiWzM5bVx1MDAxYlsyM20gICAgXHUwMDFiWzNtXHUwMDFiWzkwbTxkYmw+XHUwMDFiWzM5bVx1MDAxYlsyM20gICAgICAgICAgICAgIFx1MDAxYlszbVx1MDAxYls5MG08ZGJsPlx1MDAxYlszOW1cdTAwMWJbMjNtXG5cdTAwMWJbOTBtMVx1MDAxYlszOW0gRmVtYWxlICAgIDY0LjkgICAgICAgICAgICAgICAzLjc2XG5cdTAwMWJbOTBtMlx1MDAxYlszOW0gTWFsZSAgICAgIDY5LjMgICAgICAgICAgICAgICAzLjYxXG4ifQ== -->
-<pre><code>[90m# A tibble: 2 x 3[39m
+<!-- rnb-output-begin eyJkYXRhIjoiIyBBIHRpYmJsZTogMiB4IDNcbiAgc2V4ICAgIGF2ZXJhZ2Ugc3RhbmRhcmRfZGV2aWF0aW9uXG4gIDxmY3Q+ICAgIDxkYmw+ICAgICAgICAgICAgICA8ZGJsPlxuMSBGZW1hbGUgICAgNjQuOSAgICAgICAgICAgICAgIDMuNzZcbjIgTWFsZSAgICAgIDY5LjMgICAgICAgICAgICAgICAzLjYxXG4ifQ== -->
+<pre><code># A tibble: 2 x 3
   sex    average standard_deviation
-  [3m[90m&lt;fct&gt;[39m[23m    [3m[90m&lt;dbl&gt;[39m[23m              [3m[90m&lt;dbl&gt;[39m[23m
-[90m1[39m Female    64.9               3.76
-[90m2[39m Male      69.3               3.61</code></pre>
+  &lt;fct&gt;    &lt;dbl&gt;              &lt;dbl&gt;
+1 Female    64.9               3.76
+2 Male      69.3               3.61</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>The <code>summarize</code> function applies the summarization to each group separately.</p>
 <p>For another example, let’s compute the median murder rate in the four regions of the country:</p>
 <!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXVyZGVycyAlPiUgXG4gIGdyb3VwX2J5KHJlZ2lvbikgJT4lXG4gIHN1bW1hcml6ZShtZWRpYW5fcmF0ZSA9IG1lZGlhbihyYXRlKSlcblxuYGBgIn0= -->
+<pre class="r"><code>murders %&gt;% 
+  group_by(region) %&gt;%
+  summarize(median_rate = median(rate))
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIyBBIHRpYmJsZTogNCB4IDJcbiAgcmVnaW9uICAgICAgICBtZWRpYW5fcmF0ZVxuICA8ZmN0PiAgICAgICAgICAgICAgIDxkYmw+XG4xIE5vcnRoZWFzdCAgICAgICAgICAgIDEuODBcbjIgU291dGggICAgICAgICAgICAgICAgMy40MFxuMyBOb3J0aCBDZW50cmFsICAgICAgICAxLjk3XG40IFdlc3QgICAgICAgICAgICAgICAgIDEuMjlcbiJ9 -->
+<pre><code># A tibble: 4 x 2
+  region        median_rate
+  &lt;fct&gt;               &lt;dbl&gt;
+1 Northeast            1.80
+2 South                3.40
+3 North Central        1.97
+4 West                 1.29</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
 </div>
+<div id="sorting-data-frames" class="section level3">
+<h3>5.8 Sorting data frames</h3>
+<p>When examining a dataset, it is often convenient to sort the table by the different columns. We know about the <code>order</code> and <code>sort</code> function, but for ordering entire tables, the <strong>dplyr</strong> function <code>arrange</code> is useful. For example, here we order the states by population size:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXVyZGVycyAlPiVcbiAgYXJyYW5nZShwb3B1bGF0aW9uKSAlPiVcbiAgaGVhZCgpXG5gYGAifQ== -->
+<pre class="r"><code>murders %&gt;%
+  arrange(population) %&gt;%
+  head()</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiICAgICAgICAgICAgICAgICBzdGF0ZSBhYmIgICAgICAgIHJlZ2lvbiBwb3B1bGF0aW9uIHRvdGFsICAgICAgIHJhdGVcbjEgICAgICAgICAgICAgIFd5b21pbmcgIFdZICAgICAgICAgIFdlc3QgICAgIDU2MzYyNiAgICAgNSAgMC44ODcxMTMxXG4yIERpc3RyaWN0IG9mIENvbHVtYmlhICBEQyAgICAgICAgIFNvdXRoICAgICA2MDE3MjMgICAgOTkgMTYuNDUyNzUzMlxuMyAgICAgICAgICAgICAgVmVybW9udCAgVlQgICAgIE5vcnRoZWFzdCAgICAgNjI1NzQxICAgICAyICAwLjMxOTYyMTFcbjQgICAgICAgICBOb3J0aCBEYWtvdGEgIE5EIE5vcnRoIENlbnRyYWwgICAgIDY3MjU5MSAgICAgNCAgMC41OTQ3MTUxXG41ICAgICAgICAgICAgICAgQWxhc2thICBBSyAgICAgICAgICBXZXN0ICAgICA3MTAyMzEgICAgMTkgIDIuNjc1MTg2MFxuNiAgICAgICAgIFNvdXRoIERha290YSAgU0QgTm9ydGggQ2VudHJhbCAgICAgODE0MTgwICAgICA4ICAwLjk4MjU4MzdcbiJ9 -->
+<pre><code>                 state abb        region population total       rate
+1              Wyoming  WY          West     563626     5  0.8871131
+2 District of Columbia  DC         South     601723    99 16.4527532
+3              Vermont  VT     Northeast     625741     2  0.3196211
+4         North Dakota  ND North Central     672591     4  0.5947151
+5               Alaska  AK          West     710231    19  2.6751860
+6         South Dakota  SD North Central     814180     8  0.9825837</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>With <code>arrange</code> we get to decide which column to sort by. To see the states by population, from smallest to largest, we arrange by <code>rate</code> instead:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXVyZGVycyAlPiUgXG4gIGFycmFuZ2UocmF0ZSkgJT4lIFxuICBoZWFkKClcbmBgYCJ9 -->
+<pre class="r"><code>murders %&gt;% 
+  arrange(rate) %&gt;% 
+  head()</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiICAgICAgICAgIHN0YXRlIGFiYiAgICAgICAgcmVnaW9uIHBvcHVsYXRpb24gdG90YWwgICAgICByYXRlXG4xICAgICAgIFZlcm1vbnQgIFZUICAgICBOb3J0aGVhc3QgICAgIDYyNTc0MSAgICAgMiAwLjMxOTYyMTFcbjIgTmV3IEhhbXBzaGlyZSAgTkggICAgIE5vcnRoZWFzdCAgICAxMzE2NDcwICAgICA1IDAuMzc5ODAzNlxuMyAgICAgICAgSGF3YWlpICBISSAgICAgICAgICBXZXN0ICAgIDEzNjAzMDEgICAgIDcgMC41MTQ1OTIwXG40ICBOb3J0aCBEYWtvdGEgIE5EIE5vcnRoIENlbnRyYWwgICAgIDY3MjU5MSAgICAgNCAwLjU5NDcxNTFcbjUgICAgICAgICAgSW93YSAgSUEgTm9ydGggQ2VudHJhbCAgICAzMDQ2MzU1ICAgIDIxIDAuNjg5MzQ4NFxuNiAgICAgICAgIElkYWhvICBJRCAgICAgICAgICBXZXN0ICAgIDE1Njc1ODIgICAgMTIgMC43NjU1MTAyXG4ifQ== -->
+<pre><code>          state abb        region population total      rate
+1       Vermont  VT     Northeast     625741     2 0.3196211
+2 New Hampshire  NH     Northeast    1316470     5 0.3798036
+3        Hawaii  HI          West    1360301     7 0.5145920
+4  North Dakota  ND North Central     672591     4 0.5947151
+5          Iowa  IA North Central    3046355    21 0.6893484
+6         Idaho  ID          West    1567582    12 0.7655102</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Note that the default behavior is to order in ascending order. In <strong>dplyr</strong>, the function <code>desc</code> transforms a vector so that it is in descending order. To sort the table in descending order, we can type:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXVyZGVycyAlPiUgXG4gIGFycmFuZ2UoZGVzYyhyYXRlKSkgJT4lIFxuICBoZWFkKClcbmBgYCJ9 -->
+<pre class="r"><code>murders %&gt;% 
+  arrange(desc(rate)) %&gt;% 
+  head()</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiICAgICAgICAgICAgICAgICBzdGF0ZSBhYmIgICAgICAgIHJlZ2lvbiBwb3B1bGF0aW9uIHRvdGFsICAgICAgcmF0ZVxuMSBEaXN0cmljdCBvZiBDb2x1bWJpYSAgREMgICAgICAgICBTb3V0aCAgICAgNjAxNzIzICAgIDk5IDE2LjQ1Mjc1M1xuMiAgICAgICAgICAgIExvdWlzaWFuYSAgTEEgICAgICAgICBTb3V0aCAgICA0NTMzMzcyICAgMzUxICA3Ljc0MjU4MVxuMyAgICAgICAgICAgICBNaXNzb3VyaSAgTU8gTm9ydGggQ2VudHJhbCAgICA1OTg4OTI3ICAgMzIxICA1LjM1OTg5MlxuNCAgICAgICAgICAgICBNYXJ5bGFuZCAgTUQgICAgICAgICBTb3V0aCAgICA1NzczNTUyICAgMjkzICA1LjA3NDg2NlxuNSAgICAgICBTb3V0aCBDYXJvbGluYSAgU0MgICAgICAgICBTb3V0aCAgICA0NjI1MzY0ICAgMjA3ICA0LjQ3NTMyM1xuNiAgICAgICAgICAgICBEZWxhd2FyZSAgREUgICAgICAgICBTb3V0aCAgICAgODk3OTM0ICAgIDM4ICA0LjIzMTkzN1xuIn0= -->
+<pre><code>                 state abb        region population total      rate
+1 District of Columbia  DC         South     601723    99 16.452753
+2            Louisiana  LA         South    4533372   351  7.742581
+3             Missouri  MO North Central    5988927   321  5.359892
+4             Maryland  MD         South    5773552   293  5.074866
+5       South Carolina  SC         South    4625364   207  4.475323
+6             Delaware  DE         South     897934    38  4.231937</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="nested-sorting" class="section level3">
+<h3>5.8.1 Nested sorting</h3>
+<p>If we are ordering by a column with ties, we can use a second column to break the tie. Similarly, a third column can be used to break ties between first and second and so on. Here we order by <code>region</code>, then within region we order by murder rate:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXVyZGVycyAlPiUgXG4gIGFycmFuZ2UocmVnaW9uLCByYXRlKSAlPiUgXG4gIGhlYWQoKVxuYGBgIn0= -->
+<pre class="r"><code>murders %&gt;% 
+  arrange(region, rate) %&gt;% 
+  head()</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiICAgICAgICAgIHN0YXRlIGFiYiAgICByZWdpb24gcG9wdWxhdGlvbiB0b3RhbCAgICAgIHJhdGVcbjEgICAgICAgVmVybW9udCAgVlQgTm9ydGhlYXN0ICAgICA2MjU3NDEgICAgIDIgMC4zMTk2MjExXG4yIE5ldyBIYW1wc2hpcmUgIE5IIE5vcnRoZWFzdCAgICAxMzE2NDcwICAgICA1IDAuMzc5ODAzNlxuMyAgICAgICAgIE1haW5lICBNRSBOb3J0aGVhc3QgICAgMTMyODM2MSAgICAxMSAwLjgyODA4ODFcbjQgIFJob2RlIElzbGFuZCAgUkkgTm9ydGhlYXN0ICAgIDEwNTI1NjcgICAgMTYgMS41MjAwOTMzXG41IE1hc3NhY2h1c2V0dHMgIE1BIE5vcnRoZWFzdCAgICA2NTQ3NjI5ICAgMTE4IDEuODAyMTc5MVxuNiAgICAgIE5ldyBZb3JrICBOWSBOb3J0aGVhc3QgICAxOTM3ODEwMiAgIDUxNyAyLjY2Nzk1OTlcbiJ9 -->
+<pre><code>          state abb    region population total      rate
+1       Vermont  VT Northeast     625741     2 0.3196211
+2 New Hampshire  NH Northeast    1316470     5 0.3798036
+3         Maine  ME Northeast    1328361    11 0.8280881
+4  Rhode Island  RI Northeast    1052567    16 1.5200933
+5 Massachusetts  MA Northeast    6547629   118 1.8021791
+6      New York  NY Northeast   19378102   517 2.6679599</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="the-top-n" class="section level3">
+<h3>5.8.2 The top <span class="math inline">\(n\)</span></h3>
+<p>In the code above, we have used the function <code>head</code> to avoid having the page fill up with the entire dataset. If we want to see a larger proportion, we can use the <code>top_n</code> function. This function takes a data frame as it’s first argument, the number of rows to show in the second, and the variable to filter by in the third. Here is an example of how to see the top 10 rows:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXVyZGVycyAlPiUgdG9wX24oMTAsIHJhdGUpXG5gYGAifQ== -->
+<pre class="r"><code>murders %&gt;% top_n(10, rate)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiICAgICAgICAgICAgICAgICAgc3RhdGUgYWJiICAgICAgICByZWdpb24gcG9wdWxhdGlvbiB0b3RhbCAgICAgIHJhdGVcbjEgICAgICAgICAgICAgICBBcml6b25hICBBWiAgICAgICAgICBXZXN0ICAgIDYzOTIwMTcgICAyMzIgIDMuNjI5NTI3XG4yICAgICAgICAgICAgICBEZWxhd2FyZSAgREUgICAgICAgICBTb3V0aCAgICAgODk3OTM0ICAgIDM4ICA0LjIzMTkzN1xuMyAgRGlzdHJpY3Qgb2YgQ29sdW1iaWEgIERDICAgICAgICAgU291dGggICAgIDYwMTcyMyAgICA5OSAxNi40NTI3NTNcbjQgICAgICAgICAgICAgICBHZW9yZ2lhICBHQSAgICAgICAgIFNvdXRoICAgIDk5MjAwMDAgICAzNzYgIDMuNzkwMzIzXG41ICAgICAgICAgICAgIExvdWlzaWFuYSAgTEEgICAgICAgICBTb3V0aCAgICA0NTMzMzcyICAgMzUxICA3Ljc0MjU4MVxuNiAgICAgICAgICAgICAgTWFyeWxhbmQgIE1EICAgICAgICAgU291dGggICAgNTc3MzU1MiAgIDI5MyAgNS4wNzQ4NjZcbjcgICAgICAgICAgICAgIE1pY2hpZ2FuICBNSSBOb3J0aCBDZW50cmFsICAgIDk4ODM2NDAgICA0MTMgIDQuMTc4NjIyXG44ICAgICAgICAgICBNaXNzaXNzaXBwaSAgTVMgICAgICAgICBTb3V0aCAgICAyOTY3Mjk3ICAgMTIwICA0LjA0NDA4NVxuOSAgICAgICAgICAgICAgTWlzc291cmkgIE1PIE5vcnRoIENlbnRyYWwgICAgNTk4ODkyNyAgIDMyMSAgNS4zNTk4OTJcbjEwICAgICAgIFNvdXRoIENhcm9saW5hICBTQyAgICAgICAgIFNvdXRoICAgIDQ2MjUzNjQgICAyMDcgIDQuNDc1MzIzXG4ifQ== -->
+<pre><code>                  state abb        region population total      rate
+1               Arizona  AZ          West    6392017   232  3.629527
+2              Delaware  DE         South     897934    38  4.231937
+3  District of Columbia  DC         South     601723    99 16.452753
+4               Georgia  GA         South    9920000   376  3.790323
+5             Louisiana  LA         South    4533372   351  7.742581
+6              Maryland  MD         South    5773552   293  5.074866
+7              Michigan  MI North Central    9883640   413  4.178622
+8           Mississippi  MS         South    2967297   120  4.044085
+9              Missouri  MO North Central    5988927   321  5.359892
+10       South Carolina  SC         South    4625364   207  4.475323</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Note that rows are not sorted by <code>rate</code>, only filtered. If want to sort, we need to use <code>arrange</code>. Note that if the third argument is left blank, <code>top_n</code>, filters by the last column.</p>
+</div>
+</div>
+<div id="exercises" class="section level2">
+<h2>5.9 Exercises</h2>
+<p>For these exercises, we will be using the data from the survey collected by the United States National Center for Health Statistics (NCHS). This center has conducted a series of health and nutrition surveys since the 1960’s. Starting in 1999, about 5,000 individuals of all ages have been interviewed every year and they complete the health examination component of the survey. Part of the data is made available via the <strong>NHANES</strong> package. Once you install the <strong>NHANES</strong> package, you can load the data like this:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShOSEFORVMpXG5kYXRhKE5IQU5FUylcbmBgYCJ9 -->
+<pre class="r"><code>library(NHANES)
+data(NHANES)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>The <strong>NHANES</strong> data has many missing values. Remember that the main summarization function in R will return <code>NA</code> if any of the entries of the input vector is an <code>NA</code>. Here is an example:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShkc2xhYnMpXG5kYXRhKG5hX2V4YW1wbGUpXG5tZWFuKG5hX2V4YW1wbGUpXG5gYGAifQ== -->
+<pre class="r"><code>library(dslabs)
+data(na_example)
+mean(na_example)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIE5BXG4ifQ== -->
+<pre><code>[1] NA</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2QobmFfZXhhbXBsZSlcbmBgYCJ9 -->
+<pre class="r"><code>sd(na_example)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIE5BXG4ifQ== -->
+<pre><code>[1] NA</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>To ignore the <code>NA</code>s we can use the <code>na.rm</code> argument:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWVhbihuYV9leGFtcGxlLCBuYS5ybSA9IFRSVUUpXG5gYGAifQ== -->
+<pre class="r"><code>mean(na_example, na.rm = TRUE)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDIuMzAxNzU0XG4ifQ== -->
+<pre><code>[1] 2.301754</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2QobmFfZXhhbXBsZSwgbmEucm0gPSBUUlVFKVxuYGBgIn0= -->
+<pre class="r"><code>sd(na_example, na.rm = TRUE)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDEuMjIzMzhcbiJ9 -->
+<pre><code>[1] 1.22338</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Let’s now explore the NHANES data.</p>
+<ol style="list-style-type: decimal">
+<li>We will provide some basic facts about blood pressure. First let’s select a group to set the standard. We will use 20-29 year old females. <code>AgeDecade</code> is a categorical variable with these ages. Note that the category is coded like &quot; 20-29“, with a space in front! What is the average and standard deviation of systolic blood pressure as saved in the <code>BPSysAve</code> variable? Save it to a variable called <code>ref</code>.</li>
+</ol>
+<p>Hint: Use <code>filter</code> and <code>summarize</code> and use the <code>na.rm = TRUE</code> argument when computing the average and standard deviation. You can also filter the NA values using <code>filter</code>.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucmVmIDwtIE5IQU5FUyAlPiVcbiAgZmlsdGVyKEdlbmRlciA9PSBcImZlbWFsZVwiLCBBZ2VEZWNhZGUgPT0gXCIgMjAtMjlcIikgJT4lXG4gIHN1bW1hcml6ZShhdmVyYWdlID0gbWVhbihCUFN5c0F2ZSwgbmEucm0gPSBUUlVFKSwgc3RhbmRhcmRfZGV2aWF0aW9uID0gc2QoQlBTeXNBdmUsIG5hLnJtID0gVFJVRSkpXG5yZWZcbmBgYCJ9 -->
+<pre class="r"><code>ref &lt;- NHANES %&gt;%
+  filter(Gender == &quot;female&quot;, AgeDecade == &quot; 20-29&quot;) %&gt;%
+  summarize(average = mean(BPSysAve, na.rm = TRUE), standard_deviation = sd(BPSysAve, na.rm = TRUE))
+ref</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIyBBIHRpYmJsZTogMSB4IDJcbiAgYXZlcmFnZSBzdGFuZGFyZF9kZXZpYXRpb25cbiAgICA8ZGJsPiAgICAgICAgICAgICAgPGRibD5cbjEgICAgMTA4LiAgICAgICAgICAgICAgIDEwLjFcbiJ9 -->
+<pre><code># A tibble: 1 x 2
+  average standard_deviation
+    &lt;dbl&gt;              &lt;dbl&gt;
+1    108.               10.1</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<ol start="2" style="list-style-type: decimal">
+<li>Using a pipe, assign the average to a numeric variable <code>ref_avg</code>. Hint: Use the code similar to above and then <code>pull</code>.</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucmVmX2F2ZyAgPC0gcmVmICU+JSBwdWxsKGF2ZXJhZ2UpXG5yZWZfYXZnXG5gYGAifQ== -->
+<pre class="r"><code>ref_avg  &lt;- ref %&gt;% pull(average)
+ref_avg</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDEwOC40MjI0XG4ifQ== -->
+<pre><code>[1] 108.4224</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<ol start="3" style="list-style-type: decimal">
+<li>Now report the min and max values for the same group.</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuTkhBTkVTICU+JVxuICBmaWx0ZXIoR2VuZGVyID09ICdmZW1hbGUnLCBBZ2VEZWNhZGUgPT0gJyAyMC0yOScpICU+JVxuICBzdW1tYXJpemUobWluaW11bSA9IG1pbihCUFN5c0F2ZSwgbmEucm0gPSBUUlVFKSwgbWF4aW11bSA9IG1heChCUFN5c0F2ZSwgbmEucm0gPSBUUlVFKSlcbmBgYCJ9 -->
+<pre class="r"><code>NHANES %&gt;%
+  filter(Gender == 'female', AgeDecade == ' 20-29') %&gt;%
+  summarize(minimum = min(BPSysAve, na.rm = TRUE), maximum = max(BPSysAve, na.rm = TRUE))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIyBBIHRpYmJsZTogMSB4IDJcbiAgbWluaW11bSBtYXhpbXVtXG4gICAgPGludD4gICA8aW50PlxuMSAgICAgIDg0ICAgICAxNzlcbiJ9 -->
+<pre><code># A tibble: 1 x 2
+  minimum maximum
+    &lt;int&gt;   &lt;int&gt;
+1      84     179</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<ol start="4" style="list-style-type: decimal">
+<li>Compute the average and standard deviation for females, but for each age group separately rather than a selected decade as in question 1. Note that the age groups are defined by <code>AgeDecade</code>. Hint: rather than filtering by age and gender, filter by <code>Gender</code> and then use <code>group_by</code>.</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuTkhBTkVTICU+JVxuICBmaWx0ZXIoR2VuZGVyID09ICdmZW1hbGUnKSAlPiVcbiAgZ3JvdXBfYnkoQWdlRGVjYWRlKSAlPiVcbiAgc3VtbWFyaXplKGF2ZXJhZ2UgPSBtZWFuKEJQU3lzQXZlLCBuYS5ybSA9IFRSVUUpLCBzdGFuZGFyZF9kZXZpYXRpb24gPSBzZChCUFN5c0F2ZSwgbmEucm0gPSBUUlVFKSlcblxuYGBgIn0= -->
+<pre class="r"><code>NHANES %&gt;%
+  filter(Gender == 'female') %&gt;%
+  group_by(AgeDecade) %&gt;%
+  summarize(average = mean(BPSysAve, na.rm = TRUE), standard_deviation = sd(BPSysAve, na.rm = TRUE))
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIyBBIHRpYmJsZTogOSB4IDNcbiAgQWdlRGVjYWRlICAgYXZlcmFnZSBzdGFuZGFyZF9kZXZpYXRpb25cbiAgPGZjdD4gICAgICAgICA8ZGJsPiAgICAgICAgICAgICAgPGRibD5cbjEgXCIgMC05XCIgICAgICAgIDEwMC4wICAgICAgICAgICAgICAgOS4wN1xuMiBcIiAxMC0xOVwiICAgICAgMTA0LiAgICAgICAgICAgICAgICA5LjQ2XG4zIFwiIDIwLTI5XCIgICAgICAxMDguICAgICAgICAgICAgICAgMTAuMSBcbjQgXCIgMzAtMzlcIiAgICAgIDExMS4gICAgICAgICAgICAgICAxMi4zIFxuNSBcIiA0MC00OVwiICAgICAgMTE1LiAgICAgICAgICAgICAgIDE0LjUgXG42IFwiIDUwLTU5XCIgICAgICAxMjIuICAgICAgICAgICAgICAgMTYuMiBcbjcgXCIgNjAtNjlcIiAgICAgIDEyNy4gICAgICAgICAgICAgICAxNy4xIFxuOCBcIiA3MCtcIiAgICAgICAgMTM0LiAgICAgICAgICAgICAgIDE5LjggXG45IE1pc3NpbmdEYXRhICAgMTQyLiAgICAgICAgICAgICAgIDIyLjkgXG4ifQ== -->
+<pre><code># A tibble: 9 x 3
+  AgeDecade   average standard_deviation
+  &lt;fct&gt;         &lt;dbl&gt;              &lt;dbl&gt;
+1 &quot; 0-9&quot;        100.0               9.07
+2 &quot; 10-19&quot;      104.                9.46
+3 &quot; 20-29&quot;      108.               10.1 
+4 &quot; 30-39&quot;      111.               12.3 
+5 &quot; 40-49&quot;      115.               14.5 
+6 &quot; 50-59&quot;      122.               16.2 
+7 &quot; 60-69&quot;      127.               17.1 
+8 &quot; 70+&quot;        134.               19.8 
+9 MissingData   142.               22.9 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<ol start="5" style="list-style-type: decimal">
+<li>Repeat exercise 4 for males.</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuTkhBTkVTJEFnZURlY2FkZSA8LSBmY3RfZXhwbGljaXRfbmEoTkhBTkVTJEFnZURlY2FkZSwgbmFfbGV2ZWwgPSBcIk1pc3NpbmdEYXRhXCIpXG5OSEFORVMgJT4lXG4gIGZpbHRlcihHZW5kZXIgPT0gJ21hbGUnKSAlPiVcbiAgZ3JvdXBfYnkoQWdlRGVjYWRlKSAlPiVcbiAgc3VtbWFyaXplKGF2ZXJhZ2UgPSBtZWFuKEJQU3lzQXZlLCBuYS5ybSA9IFRSVUUpLCBzdGFuZGFyZF9kZXZpYXRpb24gPSBzZChCUFN5c0F2ZSwgbmEucm0gPSBUUlVFKSlcbmBgYCJ9 -->
+<pre class="r"><code>NHANES$AgeDecade &lt;- fct_explicit_na(NHANES$AgeDecade, na_level = &quot;MissingData&quot;)
+NHANES %&gt;%
+  filter(Gender == 'male') %&gt;%
+  group_by(AgeDecade) %&gt;%
+  summarize(average = mean(BPSysAve, na.rm = TRUE), standard_deviation = sd(BPSysAve, na.rm = TRUE))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIyBBIHRpYmJsZTogOSB4IDNcbiAgQWdlRGVjYWRlICAgYXZlcmFnZSBzdGFuZGFyZF9kZXZpYXRpb25cbiAgPGZjdD4gICAgICAgICA8ZGJsPiAgICAgICAgICAgICAgPGRibD5cbjEgXCIgMC05XCIgICAgICAgICA5Ny40ICAgICAgICAgICAgICAgOC4zMlxuMiBcIiAxMC0xOVwiICAgICAgMTEwLiAgICAgICAgICAgICAgIDExLjIgXG4zIFwiIDIwLTI5XCIgICAgICAxMTguICAgICAgICAgICAgICAgMTEuMyBcbjQgXCIgMzAtMzlcIiAgICAgIDExOS4gICAgICAgICAgICAgICAxMi4zIFxuNSBcIiA0MC00OVwiICAgICAgMTIxLiAgICAgICAgICAgICAgIDE0LjAgXG42IFwiIDUwLTU5XCIgICAgICAxMjYuICAgICAgICAgICAgICAgMTcuOCBcbjcgXCIgNjAtNjlcIiAgICAgIDEyNy4gICAgICAgICAgICAgICAxNy41IFxuOCBcIiA3MCtcIiAgICAgICAgMTMwLiAgICAgICAgICAgICAgIDE4LjcgXG45IE1pc3NpbmdEYXRhICAgMTM2LiAgICAgICAgICAgICAgIDIzLjUgXG4ifQ== -->
+<pre><code># A tibble: 9 x 3
+  AgeDecade   average standard_deviation
+  &lt;fct&gt;         &lt;dbl&gt;              &lt;dbl&gt;
+1 &quot; 0-9&quot;         97.4               8.32
+2 &quot; 10-19&quot;      110.               11.2 
+3 &quot; 20-29&quot;      118.               11.3 
+4 &quot; 30-39&quot;      119.               12.3 
+5 &quot; 40-49&quot;      121.               14.0 
+6 &quot; 50-59&quot;      126.               17.8 
+7 &quot; 60-69&quot;      127.               17.5 
+8 &quot; 70+&quot;        130.               18.7 
+9 MissingData   136.               23.5 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<ol start="6" style="list-style-type: decimal">
+<li>We can actually combine both summaries for exercises 4 and 5 into one line of code. This is because <code>group_by</code> permits us to group by more than one variable. Obtain one big summary table using <code>group_by(AgeDecade, Gender)</code>.</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuTkhBTkVTJEFnZURlY2FkZSA8LSBmY3RfZXhwbGljaXRfbmEoTkhBTkVTJEFnZURlY2FkZSwgbmFfbGV2ZWwgPSBcIk1pc3NpbmdEYXRhXCIpXG5OSEFORVMgJT4lXG4gIGdyb3VwX2J5KEFnZURlY2FkZSwgR2VuZGVyKSAlPiVcbiAgc3VtbWFyaXplKGF2ZXJhZ2UgPSBtZWFuKEJQU3lzQXZlLCBuYS5ybSA9IFRSVUUpLCBzdGFuZGFyZF9kZXZpYXRpb24gPSBzZChCUFN5c0F2ZSwgbmEucm0gPSBUUlVFKSlcbmBgYCJ9 -->
+<pre class="r"><code>NHANES$AgeDecade &lt;- fct_explicit_na(NHANES$AgeDecade, na_level = &quot;MissingData&quot;)
+NHANES %&gt;%
+  group_by(AgeDecade, Gender) %&gt;%
+  summarize(average = mean(BPSysAve, na.rm = TRUE), standard_deviation = sd(BPSysAve, na.rm = TRUE))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIyBBIHRpYmJsZTogMTggeCA0XG4jIEdyb3VwczogICBBZ2VEZWNhZGUgWzldXG4gICBBZ2VEZWNhZGUgICBHZW5kZXIgYXZlcmFnZSBzdGFuZGFyZF9kZXZpYXRpb25cbiAgIDxmY3Q+ICAgICAgIDxmY3Q+ICAgIDxkYmw+ICAgICAgICAgICAgICA8ZGJsPlxuIDEgXCIgMC05XCIgICAgICBmZW1hbGUgICAxMDAuMCAgICAgICAgICAgICAgIDkuMDdcbiAyIFwiIDAtOVwiICAgICAgbWFsZSAgICAgIDk3LjQgICAgICAgICAgICAgICA4LjMyXG4gMyBcIiAxMC0xOVwiICAgIGZlbWFsZSAgIDEwNC4gICAgICAgICAgICAgICAgOS40NlxuIDQgXCIgMTAtMTlcIiAgICBtYWxlICAgICAxMTAuICAgICAgICAgICAgICAgMTEuMiBcbiA1IFwiIDIwLTI5XCIgICAgZmVtYWxlICAgMTA4LiAgICAgICAgICAgICAgIDEwLjEgXG4gNiBcIiAyMC0yOVwiICAgIG1hbGUgICAgIDExOC4gICAgICAgICAgICAgICAxMS4zIFxuIDcgXCIgMzAtMzlcIiAgICBmZW1hbGUgICAxMTEuICAgICAgICAgICAgICAgMTIuMyBcbiA4IFwiIDMwLTM5XCIgICAgbWFsZSAgICAgMTE5LiAgICAgICAgICAgICAgIDEyLjMgXG4gOSBcIiA0MC00OVwiICAgIGZlbWFsZSAgIDExNS4gICAgICAgICAgICAgICAxNC41IFxuMTAgXCIgNDAtNDlcIiAgICBtYWxlICAgICAxMjEuICAgICAgICAgICAgICAgMTQuMCBcbjExIFwiIDUwLTU5XCIgICAgZmVtYWxlICAgMTIyLiAgICAgICAgICAgICAgIDE2LjIgXG4xMiBcIiA1MC01OVwiICAgIG1hbGUgICAgIDEyNi4gICAgICAgICAgICAgICAxNy44IFxuMTMgXCIgNjAtNjlcIiAgICBmZW1hbGUgICAxMjcuICAgICAgICAgICAgICAgMTcuMSBcbjE0IFwiIDYwLTY5XCIgICAgbWFsZSAgICAgMTI3LiAgICAgICAgICAgICAgIDE3LjUgXG4xNSBcIiA3MCtcIiAgICAgIGZlbWFsZSAgIDEzNC4gICAgICAgICAgICAgICAxOS44IFxuMTYgXCIgNzArXCIgICAgICBtYWxlICAgICAxMzAuICAgICAgICAgICAgICAgMTguNyBcbjE3IE1pc3NpbmdEYXRhIGZlbWFsZSAgIDE0Mi4gICAgICAgICAgICAgICAyMi45IFxuMTggTWlzc2luZ0RhdGEgbWFsZSAgICAgMTM2LiAgICAgICAgICAgICAgIDIzLjUgXG4ifQ== -->
+<pre><code># A tibble: 18 x 4
+# Groups:   AgeDecade [9]
+   AgeDecade   Gender average standard_deviation
+   &lt;fct&gt;       &lt;fct&gt;    &lt;dbl&gt;              &lt;dbl&gt;
+ 1 &quot; 0-9&quot;      female   100.0               9.07
+ 2 &quot; 0-9&quot;      male      97.4               8.32
+ 3 &quot; 10-19&quot;    female   104.                9.46
+ 4 &quot; 10-19&quot;    male     110.               11.2 
+ 5 &quot; 20-29&quot;    female   108.               10.1 
+ 6 &quot; 20-29&quot;    male     118.               11.3 
+ 7 &quot; 30-39&quot;    female   111.               12.3 
+ 8 &quot; 30-39&quot;    male     119.               12.3 
+ 9 &quot; 40-49&quot;    female   115.               14.5 
+10 &quot; 40-49&quot;    male     121.               14.0 
+11 &quot; 50-59&quot;    female   122.               16.2 
+12 &quot; 50-59&quot;    male     126.               17.8 
+13 &quot; 60-69&quot;    female   127.               17.1 
+14 &quot; 60-69&quot;    male     127.               17.5 
+15 &quot; 70+&quot;      female   134.               19.8 
+16 &quot; 70+&quot;      male     130.               18.7 
+17 MissingData female   142.               22.9 
+18 MissingData male     136.               23.5 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<ol start="7" style="list-style-type: decimal">
+<li>For males between the ages of 40-49, compare systolic blood pressure across race as reported in the <code>Race1</code> variable. Order the resulting table from lowest to highest average systolic blood pressure.</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuTkhBTkVTICU+JVxuICBmaWx0ZXIoR2VuZGVyID09ICdtYWxlJywgQWdlRGVjYWRlID09ICcgNDAtNDknKSAlPiVcbiAgZ3JvdXBfYnkoUmFjZTEpICU+JVxuICBzdW1tYXJpemUoYXZlcmFnZSA9IG1lYW4oQlBTeXNBdmUsIG5hLnJtID0gVFJVRSkpICU+JVxuICBhcnJhbmdlKGF2ZXJhZ2UpXG5cbmBgYCJ9 -->
+<pre class="r"><code>NHANES %&gt;%
+  filter(Gender == 'male', AgeDecade == ' 40-49') %&gt;%
+  group_by(Race1) %&gt;%
+  summarize(average = mean(BPSysAve, na.rm = TRUE)) %&gt;%
+  arrange(average)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIyBBIHRpYmJsZTogNSB4IDJcbiAgUmFjZTEgICAgYXZlcmFnZVxuICA8ZmN0PiAgICAgIDxkYmw+XG4xIFdoaXRlICAgICAgIDEyMC5cbjIgT3RoZXIgICAgICAgMTIwLlxuMyBIaXNwYW5pYyAgICAxMjIuXG40IE1leGljYW4gICAgIDEyMi5cbjUgQmxhY2sgICAgICAgMTI2LlxuIn0= -->
+<pre><code># A tibble: 5 x 2
+  Race1    average
+  &lt;fct&gt;      &lt;dbl&gt;
+1 White       120.
+2 Other       120.
+3 Hispanic    122.
+4 Mexican     122.
+5 Black       126.</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="tibbles" class="section level2">
+<h2>5.10 Tibbles</h2>
+<p>Tidy data must be stored in data frames. We introduced the data frame in Section 3.5 and have been using the <code>murders</code> data frame throughout the book:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2xhc3MobXVyZGVycylcblxuYGBgIn0= -->
+<pre class="r"><code>class(murders)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiZGF0YS5mcmFtZVwiXG4ifQ== -->
+<pre><code>[1] &quot;data.frame&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>In Section 5.7.3 we introduced the <code>group_by</code> function, which permits stratifying data before computing summary statistics. But where is the group information stored in the data frame?</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXVyZGVycyAlPiUgZ3JvdXBfYnkocmVnaW9uKSAlPiUgaGVhZCgpXG5cbmBgYCJ9 -->
+<pre class="r"><code>murders %&gt;% group_by(region) %&gt;% head()
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIyBBIHRpYmJsZTogNiB4IDVcbiMgR3JvdXBzOiAgIHJlZ2lvbiBbMl1cbiAgc3RhdGUgICAgICBhYmIgICByZWdpb24gcG9wdWxhdGlvbiB0b3RhbFxuICA8Y2hyPiAgICAgIDxjaHI+IDxmY3Q+ICAgICAgIDxkYmw+IDxkYmw+XG4xIEFsYWJhbWEgICAgQUwgICAgU291dGggICAgIDQ3Nzk3MzYgICAxMzVcbjIgQWxhc2thICAgICBBSyAgICBXZXN0ICAgICAgIDcxMDIzMSAgICAxOVxuMyBBcml6b25hICAgIEFaICAgIFdlc3QgICAgICA2MzkyMDE3ICAgMjMyXG40IEFya2Fuc2FzICAgQVIgICAgU291dGggICAgIDI5MTU5MTggICAgOTNcbjUgQ2FsaWZvcm5pYSBDQSAgICBXZXN0ICAgICAzNzI1Mzk1NiAgMTI1N1xuNiBDb2xvcmFkbyAgIENPICAgIFdlc3QgICAgICA1MDI5MTk2ICAgIDY1XG4ifQ== -->
+<pre><code># A tibble: 6 x 5
+# Groups:   region [2]
+  state      abb   region population total
+  &lt;chr&gt;      &lt;chr&gt; &lt;fct&gt;       &lt;dbl&gt; &lt;dbl&gt;
+1 Alabama    AL    South     4779736   135
+2 Alaska     AK    West       710231    19
+3 Arizona    AZ    West      6392017   232
+4 Arkansas   AR    South     2915918    93
+5 California CA    West     37253956  1257
+6 Colorado   CO    West      5029196    65</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Notice that there are no columns with this information. But, if you look closely at the output above, you see the line <code>A tibble: 6 x 5</code>. We can learn the class of the returned object using:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXVyZGVycyAlPiUgZ3JvdXBfYnkocmVnaW9uKSAlPiUgY2xhc3MoKVxuXG5gYGAifQ== -->
+<pre class="r"><code>murders %&gt;% group_by(region) %&gt;% class()
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiZ3JvdXBlZF9kZlwiIFwidGJsX2RmXCIgICAgIFwidGJsXCIgICAgICAgIFwiZGF0YS5mcmFtZVwiXG4ifQ== -->
+<pre><code>[1] &quot;grouped_df&quot; &quot;tbl_df&quot;     &quot;tbl&quot;        &quot;data.frame&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>The <code>tbl</code>, pronounced tibble, is a special kind of data frame. The functions <code>group_by</code> and <code>summarize</code> always return this type of data frame. The <code>group_by</code> function returns a special kind of <code>tbl</code>, the <code>grouped_df</code>. We will say more about these later. For consistency, the __dplyr__manipulation verbs (<code>select</code>, <code>filter</code>, <code>mutate</code>, and <code>arrange</code>) preserve the class of the input: if they receive a regular data frame they return a regular data frame, while if they receive a tibble they return a tibble. But tibbles are the preferred format in the tidyverse and as a result tidyverse functions that produce a data frame from scratch return a tibble. For example, in Chapter <a href="https://rafalab.github.io/dsbook/importing-data.html#importing-data">6</a> we will see that tidyverse functions used to import data create tibbles.</p>
+<p>Tibbles are very similar to data frames. In fact, you can think of them as a modern version of data frames. Nonetheless there are three important differences which we describe in the next.</p>
+<div id="tibbles-display-better" class="section level3">
+<h3>5.10.1 Tibbles display better</h3>
+<p>The print method for tibbles is more readable than that of a data frame. To see this, compare the outputs of typing <code>murders</code> and the output of murders if we convert it to a tibble. We can do this using <code>as_tibble(murders)</code>. If using RStudio, output for a tibble adjusts to your window size. To see this, change the width of your R console and notice how more/less columns are shown.</p>
+</div>
+<div id="subsets-of-tibbles-are-tibbles" class="section level3">
+<h3>5.10.2 Subsets of tibbles are tibbles</h3>
+<p>If you subset the columns of a data frame, you may get back an object that is not a data frame, such as a vector or scalar. For example:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2xhc3MobXVyZGVyc1ssNF0pXG5gYGAifQ== -->
+<pre class="r"><code>class(murders[,4])</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwibnVtZXJpY1wiXG4ifQ== -->
+<pre><code>[1] &quot;numeric&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>is not a data frame. With tibbles this does not happen:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2xhc3MoYXNfdGliYmxlKG11cmRlcnMpWyw0XSlcbmBgYCJ9 -->
+<pre class="r"><code>class(as_tibble(murders)[,4])</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwidGJsX2RmXCIgICAgIFwidGJsXCIgICAgICAgIFwiZGF0YS5mcmFtZVwiXG4ifQ== -->
+<pre><code>[1] &quot;tbl_df&quot;     &quot;tbl&quot;        &quot;data.frame&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>This is useful in the tidyverse since functions require data frames as input.</p>
+<p>With tibbles, if you want to access the vector that defines a column, and not get back a data frame, you need to use the accessor <code>$</code>:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2xhc3MoYXNfdGliYmxlKG11cmRlcnMpJHBvcHVsYXRpb24pXG5cbmBgYCJ9 -->
+<pre class="r"><code>class(as_tibble(murders)$population)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwibnVtZXJpY1wiXG4ifQ== -->
+<pre><code>[1] &quot;numeric&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>A related feature is that tibbles will give you a warning if you try to access a column that does not exist. If we accidentally write <code>Population</code> instead of <code>population</code> this:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXVyZGVycyRQb3B1bGF0aW9uXG5cbmBgYCJ9 -->
+<pre class="r"><code>murders$Population
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiTlVMTFxuIn0= -->
+<pre><code>NULL</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>returns a <code>NULL</code> with no warning, which can make it harder to debug. In contrast, if we try this with a tibble we get an informative warning:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYXNfdGliYmxlKG11cmRlcnMpJFBvcHVsYXRpb25cbmBgYCJ9 -->
+<pre class="r"><code>as_tibble(murders)$Population</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiVW5rbm93biBvciB1bmluaXRpYWxpc2VkIGNvbHVtbjogJ1BvcHVsYXRpb24nLlxuIn0= -->
+<pre><code>Unknown or uninitialised column: 'Population'.</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiTlVMTFxuIn0= -->
+<pre><code>NULL</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="tibbles-can-have-complex-entries" class="section level3">
+<h3>5.10.3 Tibbles can have complex entries</h3>
+<p>While data frame columns need to be vectors of numbers, strings or logical values, tibbles can have more complex objects, such as lists or functions. Also, we can create tibbles with functions:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudGliYmxlKGlkID0gYygxLCAyLCAzKSwgZnVuYyA9IGMobWVhbiwgbWVkaWFuLCBzZCkpXG5gYGAifQ== -->
+<pre class="r"><code>tibble(id = c(1, 2, 3), func = c(mean, median, sd))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIyBBIHRpYmJsZTogMyB4IDJcbiAgICAgaWQgZnVuYyAgXG4gIDxkYmw+IDxsaXN0PlxuMSAgICAgMSA8Zm4+ICBcbjIgICAgIDIgPGZuPiAgXG4zICAgICAzIDxmbj4gIFxuIn0= -->
+<pre><code># A tibble: 3 x 2
+     id func  
+  &lt;dbl&gt; &lt;list&gt;
+1     1 &lt;fn&gt;  
+2     2 &lt;fn&gt;  
+3     3 &lt;fn&gt;  </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="tibbles-can-be-grouped" class="section level3">
+<h3>5.10.4 Tibbles can be grouped</h3>
+<p>The function <code>group_by</code> returns a special kind of tibble: a grouped tibble. This class stores information that lets you know which rows are in which groups. The tidyverse functions, in particular the <code>summarize</code> function, are aware of the group information.</p>
+</div>
+<div id="create-a-tibble-using-data_frame-instead-of-data.frame" class="section level3">
+<h3>5.10.5 Create a tibble using <code>data_frame</code> instead of <code>data.frame</code></h3>
+<p>It is sometimes useful for us to create our own data frames. To create a data frame in the tibble format, you can do this by using the <code>data_frame</code> function.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ3JhZGVzIDwtIGRhdGFfZnJhbWUobmFtZXMgPSBjKFwiSm9oblwiLCBcIkp1YW5cIiwgXCJKZWFuXCIsIFwiWWFvXCIpLCBcbiAgICAgICAgICAgICAgICAgICAgIGV4YW1fMSA9IGMoOTUsIDgwLCA5MCwgODUpLCBcbiAgICAgICAgICAgICAgICAgICAgIGV4YW1fMiA9IGMoOTAsIDg1LCA4NSwgOTApKVxuZ3JhZGVzXG5gYGAifQ== -->
+<pre class="r"><code>grades &lt;- data_frame(names = c(&quot;John&quot;, &quot;Juan&quot;, &quot;Jean&quot;, &quot;Yao&quot;), 
+                     exam_1 = c(95, 80, 90, 85), 
+                     exam_2 = c(90, 85, 85, 90))
+grades</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIyBBIHRpYmJsZTogNCB4IDNcbiAgbmFtZXMgZXhhbV8xIGV4YW1fMlxuICA8Y2hyPiAgPGRibD4gIDxkYmw+XG4xIEpvaG4gICAgICA5NSAgICAgOTBcbjIgSnVhbiAgICAgIDgwICAgICA4NVxuMyBKZWFuICAgICAgOTAgICAgIDg1XG40IFlhbyAgICAgICA4NSAgICAgOTBcbiJ9 -->
+<pre><code># A tibble: 4 x 3
+  names exam_1 exam_2
+  &lt;chr&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+1 John      95     90
+2 Juan      80     85
+3 Jean      90     85
+4 Yao       85     90</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Note that base R (without packages loaded) has a function with a very similar name, <code>data.frame</code>, that can be used to create a regular data frame rather than a tibble. One other important difference is that by default <code>data.frame</code> coerces characters into factors without providing a warning or message:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ3JhZGVzIDwtIGRhdGEuZnJhbWUobmFtZXMgPSBjKFwiSm9oblwiLCBcIkp1YW5cIiwgXCJKZWFuXCIsIFwiWWFvXCIpLCBcbiAgICAgICAgICAgICAgICAgICAgIGV4YW1fMSA9IGMoOTUsIDgwLCA5MCwgODUpLCBcbiAgICAgICAgICAgICAgICAgICAgIGV4YW1fMiA9IGMoOTAsIDg1LCA4NSwgOTApKVxuY2xhc3MoZ3JhZGVzJG5hbWVzKVxuYGBgIn0= -->
+<pre class="r"><code>grades &lt;- data.frame(names = c(&quot;John&quot;, &quot;Juan&quot;, &quot;Jean&quot;, &quot;Yao&quot;), 
+                     exam_1 = c(95, 80, 90, 85), 
+                     exam_2 = c(90, 85, 85, 90))
+class(grades$names)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiZmFjdG9yXCJcbiJ9 -->
+<pre><code>[1] &quot;factor&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>To avoid this, we use the rather cumbersome argument <code>stringsAsFactors</code>:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ3JhZGVzIDwtIGRhdGEuZnJhbWUobmFtZXMgPSBjKFwiSm9oblwiLCBcIkp1YW5cIiwgXCJKZWFuXCIsIFwiWWFvXCIpLCBcbiAgICAgICAgICAgICAgICAgICAgIGV4YW1fMSA9IGMoOTUsIDgwLCA5MCwgODUpLCBcbiAgICAgICAgICAgICAgICAgICAgIGV4YW1fMiA9IGMoOTAsIDg1LCA4NSwgOTApLFxuICAgICAgICAgICAgICAgICAgICAgc3RyaW5nc0FzRmFjdG9ycyA9IEZBTFNFKVxuY2xhc3MoZ3JhZGVzJG5hbWVzKVxuYGBgIn0= -->
+<pre class="r"><code>grades &lt;- data.frame(names = c(&quot;John&quot;, &quot;Juan&quot;, &quot;Jean&quot;, &quot;Yao&quot;), 
+                     exam_1 = c(95, 80, 90, 85), 
+                     exam_2 = c(90, 85, 85, 90),
+                     stringsAsFactors = FALSE)
+class(grades$names)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiY2hhcmFjdGVyXCJcbiJ9 -->
+<pre><code>[1] &quot;character&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>To convert a regular data frame to a tibble, you can use the <code>as_tibble</code> function.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYXNfdGliYmxlKGdyYWRlcykgJT4lIGNsYXNzKClcbmBgYCJ9 -->
+<pre class="r"><code>as_tibble(grades) %&gt;% class()</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwidGJsX2RmXCIgICAgIFwidGJsXCIgICAgICAgIFwiZGF0YS5mcmFtZVwiXG4ifQ== -->
+<pre><code>[1] &quot;tbl_df&quot;     &quot;tbl&quot;        &quot;data.frame&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+</div>
+<div id="the-dot-operator" class="section level2">
+<h2>5.11 The dot operator</h2>
+<p>One of the advantages of using the pipe <code>%&gt;%</code> is that we do not have to keep naming new objects as we manipulate the data frame. As quick reminder, if we want to compute the median murder rate for states in the southern states, instead of typing:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudGFiXzEgPC0gZmlsdGVyKG11cmRlcnMsIHJlZ2lvbiA9PSBcIlNvdXRoXCIpXG50YWJfMiA8LSBtdXRhdGUodGFiXzEsIHJhdGUgPSB0b3RhbCAvIHBvcHVsYXRpb24gKiAxMF41KVxucmF0ZXMgPC0gdGFiXzIkcmF0ZVxubWVkaWFuKHJhdGVzKVxuYGBgIn0= -->
+<pre class="r"><code>tab_1 &lt;- filter(murders, region == &quot;South&quot;)
+tab_2 &lt;- mutate(tab_1, rate = total / population * 10^5)
+rates &lt;- tab_2$rate
+median(rates)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDMuMzk4MDY5XG4ifQ== -->
+<pre><code>[1] 3.398069</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>We can avoid defining any new intermediate objects by instead typing:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZmlsdGVyKG11cmRlcnMsIHJlZ2lvbiA9PSBcIlNvdXRoXCIpICU+JSBcbiAgbXV0YXRlKHJhdGUgPSB0b3RhbCAvIHBvcHVsYXRpb24gKiAxMF41KSAlPiUgXG4gIHN1bW1hcml6ZShtZWRpYW4gPSBtZWRpYW4ocmF0ZSkpICU+JVxuICBwdWxsKG1lZGlhbilcbmBgYCJ9 -->
+<pre class="r"><code>filter(murders, region == &quot;South&quot;) %&gt;% 
+  mutate(rate = total / population * 10^5) %&gt;% 
+  summarize(median = median(rate)) %&gt;%
+  pull(median)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDMuMzk4MDY5XG4ifQ== -->
+<pre><code>[1] 3.398069</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>We can do this because each of these functions takes a data frame as the first argument. But what if we want to access a component of the data frame. For example, what if the <code>pull</code> function was not available and we wanted to access <code>tab_2$rate</code>? What data frame name would we use? The answer is the dot operator.</p>
+<p>For example to access the rate vector without the <code>pull</code> function we could use</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucmF0ZXMgPC1maWx0ZXIobXVyZGVycywgcmVnaW9uID09IFwiU291dGhcIikgJT4lIFxuICBtdXRhdGUocmF0ZSA9IHRvdGFsIC8gcG9wdWxhdGlvbiAqIDEwXjUpICU+JSBcbiAgLiRyYXRlXG5tZWRpYW4ocmF0ZXMpXG5gYGAifQ== -->
+<pre class="r"><code>rates &lt;-filter(murders, region == &quot;South&quot;) %&gt;% 
+  mutate(rate = total / population * 10^5) %&gt;% 
+  .$rate
+median(rates)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDMuMzk4MDY5XG4ifQ== -->
+<pre><code>[1] 3.398069</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>In the next section, we will see other instances in which using the <code>.</code> is useful.</p>
+</div>
+<div id="do" class="section level2">
+<h2>5.12 <code>do</code></h2>
+<p>The tidyverse functions know how to interpret grouped tibbles. Furthermore, to facilitate stringing commands through the pipe <code>%&gt;%</code>, tidyverse functions consistently return data frames, since this assures that the output of a function is accepted as the input of another. But most R functions do not recognize grouped tibbles nor do they return data frames. The <code>quantile</code> function is an example we described in Section <a href="https://rafalab.github.io/dsbook/tidyverse.html#summarize">5.7.1</a>. The <code>do</code> functions serves as a bridge between R functions such as <code>quantile</code> and the tidyverse. The <code>do</code> function understands grouped tibbles and always returns a data frame.</p>
+<p>In Section <a href="https://rafalab.github.io/dsbook/tidyverse.html#summarize">5.7.1</a>, we noted that if we attempt to use <code>quantile</code> to obtain the min, median and max in one call, we will receive an error: <code>Error: expecting result of length one, got : 2</code>.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YShoZWlnaHRzKVxuaGVpZ2h0cyAlPiUgXG4gIGZpbHRlcihzZXggPT0gXCJGZW1hbGVcIikgJT4lXG4gIHN1bW1hcml6ZShyYW5nZSA9IHF1YW50aWxlKGhlaWdodCwgYygwLCAwLjUsIDEpKSlcbmBgYCJ9 -->
+<pre class="r"><code>data(heights)
+heights %&gt;% 
+  filter(sex == &quot;Female&quot;) %&gt;%
+  summarize(range = quantile(height, c(0, 0.5, 1)))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3I6IENvbHVtbiBgcmFuZ2VgIG11c3QgYmUgbGVuZ3RoIDEgKGEgc3VtbWFyeSB2YWx1ZSksIG5vdCAzXG4ifQ== -->
+<pre><code>Error: Column `range` must be length 1 (a summary value), not 3</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>We can use the <code>do</code> function fix this.</p>
+<p>First we have to write a function that fits into the tidyverse approach: that is, it receives a data frame and returns a data frame.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXlfc3VtbWFyeSA8LSBmdW5jdGlvbihkYXQpe1xuICB4IDwtIHF1YW50aWxlKGRhdCRoZWlnaHQsIGMoMCwgMC41LCAxKSlcbiAgZGF0YV9mcmFtZShtaW4gPSB4WzFdLCBtZWRpYW4gPSB4WzJdLCBtYXggPSB4WzNdKVxufVxuYGBgIn0= -->
+<pre class="r"><code>my_summary &lt;- function(dat){
+  x &lt;- quantile(dat$height, c(0, 0.5, 1))
+  data_frame(min = x[1], median = x[2], max = x[3])
+}</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>We can now apply the function to the heights dataset to obtain the summaries:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaGVpZ2h0cyAlPiUgXG4gIGdyb3VwX2J5KHNleCkgJT4lIFxuICBteV9zdW1tYXJ5XG5gYGAifQ== -->
+<pre class="r"><code>heights %&gt;% 
+  group_by(sex) %&gt;% 
+  my_summary</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIyBBIHRpYmJsZTogMSB4IDNcbiAgICBtaW4gbWVkaWFuICAgbWF4XG4gIDxkYmw+ICA8ZGJsPiA8ZGJsPlxuMSAgICA1MCAgIDY4LjUgIDgyLjdcbiJ9 -->
+<pre><code># A tibble: 1 x 3
+    min median   max
+  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;
+1    50   68.5  82.7</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>But this is not what we want. We want a summary for each sex and the code returned just one summary. This is because <code>my_summary</code> is not part of the tidyverse and does not know how to handled grouped tibbles. <code>do</code> makes this connection:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaGVpZ2h0cyAlPiUgXG4gIGdyb3VwX2J5KHNleCkgJT4lIFxuICBkbyhteV9zdW1tYXJ5KC4pKVxuYGBgIn0= -->
+<pre class="r"><code>heights %&gt;% 
+  group_by(sex) %&gt;% 
+  do(my_summary(.))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIyBBIHRpYmJsZTogMiB4IDRcbiMgR3JvdXBzOiAgIHNleCBbMl1cbiAgc2V4ICAgICAgbWluIG1lZGlhbiAgIG1heFxuICA8ZmN0PiAgPGRibD4gIDxkYmw+IDxkYmw+XG4xIEZlbWFsZSAgICA1MSAgIDY1LjAgIDc5ICBcbjIgTWFsZSAgICAgIDUwICAgNjkgICAgODIuN1xuIn0= -->
+<pre><code># A tibble: 2 x 4
+# Groups:   sex [2]
+  sex      min median   max
+  &lt;fct&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;
+1 Female    51   65.0  79  
+2 Male      50   69    82.7</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Note that here we need to use the dot operator. The tibble created by <code>group_by</code> is piped to <code>do</code>. Within the call to <code>do</code>, the name of this tibble is <code>.</code> and we want to send it to <code>my_summary</code>. If you do not use the dot, then <code>my_summary</code> has <em>no argument</em> and returns an error telling us that <code>argument &quot;dat&quot;</code> is missing. You can see the error by typing:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaGVpZ2h0cyAlPiUgXG4gIGdyb3VwX2J5KHNleCkgJT4lIFxuICBkbyhteV9zdW1tYXJ5KCkpXG5gYGAifQ== -->
+<pre class="r"><code>heights %&gt;% 
+  group_by(sex) %&gt;% 
+  do(my_summary())</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>If you do not use the parenthesis, then the function is not executed and instead do tries to return the function. This gives an error because do must always return a data frame. You can see the error by typing:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaGVpZ2h0cyAlPiUgXG4gIGdyb3VwX2J5KHNleCkgJT4lIFxuICBkbyhteV9zdW1tYXJ5KVxuYGBgIn0= -->
+<pre class="r"><code>heights %&gt;% 
+  group_by(sex) %&gt;% 
+  do(my_summary)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="the-purrr-package" class="section level2">
+<h2>5.13 The purrr package</h2>
+<p>In Section <a href="https://rafalab.github.io/dsbook/programming-basics.html#vectorization">4.5</a> we learned about the <code>sapply</code> function, which permitted us to apply the same function to each element of a vector. We constructed this function:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29tcHV0ZV9zX24gPC0gZnVuY3Rpb24obil7XG4gIHggPC0gMTpuXG4gIHN1bSh4KVxufVxuYGBgIn0= -->
+<pre class="r"><code>compute_s_n &lt;- function(n){
+  x &lt;- 1:n
+  sum(x)
+}</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>and used <code>sapply</code> to compute the sum of the first <code>n</code> integers for several values of <code>n</code> like this:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubiA8LSAxOjI1XG5zX24gPC0gc2FwcGx5KG4sIGNvbXB1dGVfc19uKVxuYGBgIn0= -->
+<pre class="r"><code>n &lt;- 1:25
+s_n &lt;- sapply(n, compute_s_n)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>This type of operation, applying the same function or procedure to elements of an object, is quite common in data analysis. The <strong>purrr</strong> package includes functions similar to <code>sapply</code> but that better interact with other tidyverse functions. The main advantage is that we can better control the output type of functions. In contrast, <code>sapply</code> can return several different object types; for example, we might expect a numeric result from a line of code, but <code>sapply</code> might convert our result to character under some circumstances. <strong>purrr</strong> functions will never do this: they will return objects of a specified type or return an error if this is not possible.</p>
+<p>The first <strong>purrr</strong> function we will learn is <code>map</code>, which works very similar to <code>sapply</code> but always, without exception, returns a list:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShwdXJycilcbnNfbiA8LSBtYXAobiwgY29tcHV0ZV9zX24pXG5jbGFzcyhzX24pXG5gYGAifQ== -->
+<pre class="r"><code>library(purrr)
+s_n &lt;- map(n, compute_s_n)
+class(s_n)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwibGlzdFwiXG4ifQ== -->
+<pre><code>[1] &quot;list&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>If we want a numeric vector, we can instead use <code>map_dbl</code> which always returns a vector of numeric values.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc19uIDwtIG1hcF9kYmwobiwgY29tcHV0ZV9zX24pXG5jbGFzcyhzX24pXG5gYGAifQ== -->
+<pre class="r"><code>s_n &lt;- map_dbl(n, compute_s_n)
+class(s_n)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwibnVtZXJpY1wiXG4ifQ== -->
+<pre><code>[1] &quot;numeric&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>This produces the same results as the <code>sapply</code> call shown above.</p>
+<p>A particularly useful <strong>purrr</strong> function for interacting with the rest of the tidyverse is <code>map_df</code>, which always returns a tibble data frame. However, the function being called needs to return a vector a or list with names. For this reason, the following code would result in a <code>Argument 1 must have names</code> error:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc19uIDwtIG1hcF9kZihuLCBjb21wdXRlX3NfbilcbmBgYCJ9 -->
+<pre class="r"><code>s_n &lt;- map_df(n, compute_s_n)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3I6IEFyZ3VtZW50IDEgbXVzdCBoYXZlIG5hbWVzXG4ifQ== -->
+<pre><code>Error: Argument 1 must have names</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>We need to change the function to make this work:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaGVhZChzX24pXG5cbmBgYCJ9 -->
+<pre class="r"><code>head(s_n)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIyBBIHRpYmJsZTogNiB4IDFcbiAgICBzdW1cbiAgPGludD5cbjEgICAgIDFcbjIgICAgIDNcbjMgICAgIDZcbjQgICAgMTBcbjUgICAgMTVcbjYgICAgMjFcbiJ9 -->
+<pre><code># A tibble: 6 x 1
+    sum
+  &lt;int&gt;
+1     1
+2     3
+3     6
+4    10
+5    15
+6    21</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>The <strong>purrr</strong> package provides much more functionality not covered here. For more details you can consult <a href="https://jennybc.github.io/purrr-tutorial/">this online resource</a>.</p>
+</div>
+<div id="tidyverse-conditionals" class="section level2">
+<h2>5.14 Tidyverse conditionals</h2>
+<p>A typical data analysis will often involve one or more conditional operation. In Section <a href="https://rafalab.github.io/dsbook/programming-basics.html#conditionals">4.1</a> we described the <code>ifelse</code> function, which we will use extensively in this book. In this section we present two <strong>dplyr</strong> functions that provide further functionality for performing conditional operations.</p>
+<div id="case_when" class="section level3">
+<h3>5.14.1 <code>case_when</code></h3>
+<p>The <code>case_when</code> function is useful for vectorizing conditional statements. It is similar to <code>ifelse</code> but can output any number of values, as opposed to just <code>TRUE</code> or <code>FALSE</code>. Here is an example splitting numbers into negative, positives and 0:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxueCA8LSBjKC0yLCAtMSwgMCwgMSwgMilcbmNhc2Vfd2hlbih4IDwgMCB+IFwiTmVnYXRpdmVcIiwgeCA+IDAgfiBcIlBvc2l0aXZlXCIsIFRSVUUgfiBcIlplcm9cIilcbmBgYCJ9 -->
+<pre class="r"><code>x &lt;- c(-2, -1, 0, 1, 2)
+case_when(x &lt; 0 ~ &quot;Negative&quot;, x &gt; 0 ~ &quot;Positive&quot;, TRUE ~ &quot;Zero&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiTmVnYXRpdmVcIiBcIk5lZ2F0aXZlXCIgXCJaZXJvXCIgICAgIFwiUG9zaXRpdmVcIiBcIlBvc2l0aXZlXCJcbiJ9 -->
+<pre><code>[1] &quot;Negative&quot; &quot;Negative&quot; &quot;Zero&quot;     &quot;Positive&quot; &quot;Positive&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>A common use for this function is to define categorical variables based on existing variables. For example, suppose we we want compare the murder rates in in three groups of states: <em>New England</em>, <em>West Coast</em>, <em>South</em>, and <em>other</em>. For each state, we need to ask if it is in New England, if it is not we ask if it is in the West Coast, if not we ask if it is in the South and if not we assign <em>other</em>. Here is how we use <code>case_when</code> to do this:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXVyZGVycyAlPiUgXG4gIG11dGF0ZShncm91cCA9IGNhc2Vfd2hlbihcbiAgICBhYmIgJWluJSBjKFwiTUVcIiwgXCJOSFwiLCBcIlZUXCIsIFwiTUFcIiwgXCJSSVwiLCBcIkNUXCIpIH4gXCJOZXcgRW5nbGFuZFwiLFxuICAgIGFiYiAlaW4lIGMoXCJXQVwiLCBcIk9SXCIsIFwiQ0FcIikgfiBcIldlc3QgQ29hc3RcIixcbiAgICByZWdpb24gPT0gXCJTb3V0aFwiIH4gXCJTb3V0aFwiLFxuICAgIFRSVUUgfiBcIm90aGVyXCIpKSAlPiVcbiAgZ3JvdXBfYnkoZ3JvdXApICU+JVxuICBzdW1tYXJpemUocmF0ZSA9IHN1bSh0b3RhbCkgLyBzdW0ocG9wdWxhdGlvbikgKiAxMF41KSAlPiVcbiAgYXJyYW5nZShyYXRlKVxuYGBgIn0= -->
+<pre class="r"><code>murders %&gt;% 
+  mutate(group = case_when(
+    abb %in% c(&quot;ME&quot;, &quot;NH&quot;, &quot;VT&quot;, &quot;MA&quot;, &quot;RI&quot;, &quot;CT&quot;) ~ &quot;New England&quot;,
+    abb %in% c(&quot;WA&quot;, &quot;OR&quot;, &quot;CA&quot;) ~ &quot;West Coast&quot;,
+    region == &quot;South&quot; ~ &quot;South&quot;,
+    TRUE ~ &quot;other&quot;)) %&gt;%
+  group_by(group) %&gt;%
+  summarize(rate = sum(total) / sum(population) * 10^5) %&gt;%
+  arrange(rate)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIyBBIHRpYmJsZTogNCB4IDJcbiAgZ3JvdXAgICAgICAgIHJhdGVcbiAgPGNocj4gICAgICAgPGRibD5cbjEgTmV3IEVuZ2xhbmQgIDEuNzJcbjIgb3RoZXIgICAgICAgIDIuNzFcbjMgV2VzdCBDb2FzdCAgIDIuOTBcbjQgU291dGggICAgICAgIDMuNjNcbiJ9 -->
+<pre><code># A tibble: 4 x 2
+  group        rate
+  &lt;chr&gt;       &lt;dbl&gt;
+1 New England  1.72
+2 other        2.71
+3 West Coast   2.90
+4 South        3.63</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="between" class="section level3">
+<h3>5.14.2 <code>between</code></h3>
+<p>A common operation in data analysis is to determine if a value falls inside an interval. We can check this using conditionals. For example to check if the elements of a vector <code>x</code> are between <code>a</code> and <code>b</code> we can type</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxueCA+PSBhICYgeCA8PSBiXG5gYGAifQ== -->
+<pre class="r"><code>x &gt;= a &amp; x &lt;= b</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>However, this can become cumbersome, especially within the tidyverse approach. The <code>between</code> function performs the same operation.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYmV0d2Vlbih4LCBhLCBiKVxuYGBgIn0= -->
+<pre class="r"><code>between(x, a, b)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+</div>
+<div id="exercises-1" class="section level1">
+<h1>5.15 Exercises</h1>
+<ol style="list-style-type: decimal">
+<li>Load the <code>murders</code> dataset. Which of the following is true?</li>
+</ol>
+<p>A. <code>murders</code> is in tidy format and is stored in a tibble.<br />
+B. <code>murders</code> is in tidy format and is stored in a data frame. C. <code>murders</code> is not in tidy format and is stored in a tibble. D. <code>murders</code> is not in tidy format and is stored in a data frame.</p>
+<p><code>answer: B</code></p>
+<ol start="2" style="list-style-type: decimal">
+<li>Use <code>as_tibble</code> to covert the <code>murders</code> data table into a tibble and save it in an object called <code>murders_tibble</code>.</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXVyZGVyc190aWJibGUgPC0gYXNfdGliYmxlKG11cmRlcnMpXG5gYGAifQ== -->
+<pre class="r"><code>murders_tibble &lt;- as_tibble(murders)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<ol start="3" style="list-style-type: decimal">
+<li>Use the <code>group_by</code> function to convert murders into a tibble that is grouped by region.</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXVyZGVyc190aWJibGUgJT4lIGdyb3VwX2J5KHJlZ2lvbilcbmBgYCJ9 -->
+<pre class="r"><code>murders_tibble %&gt;% group_by(region)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIyBBIHRpYmJsZTogNTEgeCA1XG4jIEdyb3VwczogICByZWdpb24gWzRdXG4gICBzdGF0ZSAgICAgICAgICAgICAgICBhYmIgICByZWdpb24gICAgcG9wdWxhdGlvbiB0b3RhbFxuICAgPGNocj4gICAgICAgICAgICAgICAgPGNocj4gPGZjdD4gICAgICAgICAgPGRibD4gPGRibD5cbiAxIEFsYWJhbWEgICAgICAgICAgICAgIEFMICAgIFNvdXRoICAgICAgICA0Nzc5NzM2ICAgMTM1XG4gMiBBbGFza2EgICAgICAgICAgICAgICBBSyAgICBXZXN0ICAgICAgICAgIDcxMDIzMSAgICAxOVxuIDMgQXJpem9uYSAgICAgICAgICAgICAgQVogICAgV2VzdCAgICAgICAgIDYzOTIwMTcgICAyMzJcbiA0IEFya2Fuc2FzICAgICAgICAgICAgIEFSICAgIFNvdXRoICAgICAgICAyOTE1OTE4ICAgIDkzXG4gNSBDYWxpZm9ybmlhICAgICAgICAgICBDQSAgICBXZXN0ICAgICAgICAzNzI1Mzk1NiAgMTI1N1xuIDYgQ29sb3JhZG8gICAgICAgICAgICAgQ08gICAgV2VzdCAgICAgICAgIDUwMjkxOTYgICAgNjVcbiA3IENvbm5lY3RpY3V0ICAgICAgICAgIENUICAgIE5vcnRoZWFzdCAgICAzNTc0MDk3ICAgIDk3XG4gOCBEZWxhd2FyZSAgICAgICAgICAgICBERSAgICBTb3V0aCAgICAgICAgIDg5NzkzNCAgICAzOFxuIDkgRGlzdHJpY3Qgb2YgQ29sdW1iaWEgREMgICAgU291dGggICAgICAgICA2MDE3MjMgICAgOTlcbjEwIEZsb3JpZGEgICAgICAgICAgICAgIEZMICAgIFNvdXRoICAgICAgIDE5Njg3NjUzICAgNjY5XG4jIOKApiB3aXRoIDQxIG1vcmUgcm93c1xuIn0= -->
+<pre><code># A tibble: 51 x 5
+# Groups:   region [4]
+   state                abb   region    population total
+   &lt;chr&gt;                &lt;chr&gt; &lt;fct&gt;          &lt;dbl&gt; &lt;dbl&gt;
+ 1 Alabama              AL    South        4779736   135
+ 2 Alaska               AK    West          710231    19
+ 3 Arizona              AZ    West         6392017   232
+ 4 Arkansas             AR    South        2915918    93
+ 5 California           CA    West        37253956  1257
+ 6 Colorado             CO    West         5029196    65
+ 7 Connecticut          CT    Northeast    3574097    97
+ 8 Delaware             DE    South         897934    38
+ 9 District of Columbia DC    South         601723    99
+10 Florida              FL    South       19687653   669
+# … with 41 more rows</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<ol start="4" style="list-style-type: decimal">
+<li>Write tidyverse code that is equivalent to this code: <code>exp(mean(log(murders$population)))</code>. Write it using the pipe so that each function is called without arguments. Use the dot operator to access the population. Hint: The code should start with <code>murders %&gt;%</code>.</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXVyZGVycyAlPiVcbiAgLiRwb3B1bGF0aW9uICU+JVxuICBsb2coKSAlPiVcbiAgbWVhbigpICU+JVxuICBleHAoKVxuYGBgIn0= -->
+<pre class="r"><code>murders %&gt;%
+  .$population %&gt;%
+  log() %&gt;%
+  mean() %&gt;%
+  exp()</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDM2NzUyMDlcbiJ9 -->
+<pre><code>[1] 3675209</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<ol start="5" style="list-style-type: decimal">
+<li>Use the <code>map_df</code> to create a data frame with three columns named <code>n</code>, <code>s_n</code>, and <code>s_n_2</code>. The first column should contain the numbers 1 through 100. The second and third columns should each contain the sum of 1 through <span class="math inline">\(n\)</span> with <span class="math inline">\(n\)</span> the row number.</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29tcHV0ZV9zX24gPC0gZnVuY3Rpb24obil7XG4gIHggPC0gMTpuXG4gIGRhdGFfZnJhbWUobiA9IG4sIHNfbiA9IHN1bSh4KSwgc19uXzIgPSBzdW0oeCkpXG59XG5uIDwtIDE6MTAwXG5tYXBfZGYobiwgY29tcHV0ZV9zX24pXG5gYGAifQ== -->
+<pre class="r"><code>compute_s_n &lt;- function(n){
+  x &lt;- 1:n
+  data_frame(n = n, s_n = sum(x), s_n_2 = sum(x))
+}
+n &lt;- 1:100
+map_df(n, compute_s_n)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIyBBIHRpYmJsZTogMTAwIHggM1xuICAgICAgIG4gICBzX24gc19uXzJcbiAgIDxpbnQ+IDxpbnQ+IDxpbnQ+XG4gMSAgICAgMSAgICAgMSAgICAgMVxuIDIgICAgIDIgICAgIDMgICAgIDNcbiAzICAgICAzICAgICA2ICAgICA2XG4gNCAgICAgNCAgICAxMCAgICAxMFxuIDUgICAgIDUgICAgMTUgICAgMTVcbiA2ICAgICA2ICAgIDIxICAgIDIxXG4gNyAgICAgNyAgICAyOCAgICAyOFxuIDggICAgIDggICAgMzYgICAgMzZcbiA5ICAgICA5ICAgIDQ1ICAgIDQ1XG4xMCAgICAxMCAgICA1NSAgICA1NVxuIyDigKYgd2l0aCA5MCBtb3JlIHJvd3NcbiJ9 -->
+<pre><code># A tibble: 100 x 3
+       n   s_n s_n_2
+   &lt;int&gt; &lt;int&gt; &lt;int&gt;
+ 1     1     1     1
+ 2     2     3     3
+ 3     3     6     6
+ 4     4    10    10
+ 5     5    15    15
+ 6     6    21    21
+ 7     7    28    28
+ 8     8    36    36
+ 9     9    45    45
+10    10    55    55
+# … with 90 more rows</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
 </div>
 
-<div id="rmd-source-code">Ci0tLQpvdXRwdXQ6IAogIGh0bWxfbm90ZWJvb2s6IAogICAgdG9jOiB5ZXMKZWRpdG9yX29wdGlvbnM6IAogIGNodW5rX291dHB1dF90eXBlOiBpbmxpbmUKLS0tCj4gW1ByZXZpb3VzXShodHRwczovL21hcmtkajAuZ2l0aHViLmlvL2JzbXMyMjJfMTMyX2tpbS8pCgojIyA1LjcgU3VtbWFyaXppbmcgZGF0YQoKQW4gaW1wb3J0YW50IHBhcnQgb2YgZXhwbG9yYXRvcnkgZGF0YSBhbmFseXNpcyBpcyBzdW1tYXJpemluZyBkYXRhLiBUaGUgYXZlcmFnZSBhbmQgc3RhbmRhcmQgZGV2aWF0aW9uIGFyZSB0d28gZXhhbXBsZXMgb2Ygd2lkZWx5IHVzZWQgc3VtbWFyeSBzdGF0aXN0aWNzLiBNb3JlIGluZm9ybWF0aXZlIHN1bW1hcmllcyBjYW4gb2Z0ZW4gYmUgYWNoaWV2ZWQgYnkgZmlyc3Qgc3BsaXR0aW5nIGRhdGEgaW50byBncm91cHMuIEluIHRoaXMgc2VjdGlvbiwgd2UgY292ZXIgdHdvIG5ldyAqKmRwbHlyKiogdmVyYnMgdGhhdCBtYWtlIHRoZXNlIGNvbXB1dGF0aW9ucyBlYXNpZXI6IGBzdW1tYXJpemVgIGFuZCBgZ3JvdXBfYnlgLiBXZSBsZWFybiB0byBhY2Nlc3MgcmVzdWx0aW5nIHZhbHVlcyB1c2luZyB0aGUgYHB1bGxgIGZ1bmN0aW9uLgoKIyMjIDUuNy4xIGBzdW1tYXJpemVgCgpUaGUgYHN1bW1hcml6ZWAgZnVuY3Rpb24gaW4gKipkcGx5cioqIHByb3ZpZGVzIGEgd2F5IHRvIGNvbXB1dGUgc3VtbWFyeSBzdGF0aXN0aWNzIHdpdGggaW50dWl0aXZlIGFuZCByZWFkYWJsZSBjb2RlLiBXZSBzdGFydCB3aXRoIGEgc2ltcGxlIGV4YW1wbGUgYmFzZWQgb24gaGVpZ2h0cy4gVGhlIGBoZWlnaHRzYCBkYXRhc2V0IGluY2x1ZGVzIGhlaWdodHMgYW5kIHNleCByZXBvcnRlZCBieSBzdHVkZW50cyBpbiBhbiBpbi1jbGFzcyBzdXJ2ZXkuCmBgYHtyfQpsaWJyYXJ5KGRwbHlyKQpsaWJyYXJ5KGRzbGFicykKZGF0YShoZWlnaHRzKQpgYGAKClRoZSBmb2xsb3dpbmcgY29kZSBjb21wdXRlcyB0aGUgYXZlcmFnZSBhbmQgc3RhbmRhcmQgZGV2aWF0aW9uIGZvciBmZW1hbGVzOgpgYGB7ciBwYWdlZC5wcmludD1GQUxTRX0KcyA8LSBoZWlnaHRzICU+JSAKICBmaWx0ZXIoc2V4ID09ICJGZW1hbGUiKSAlPiUKICBzdW1tYXJpemUoYXZlcmFnZSA9IG1lYW4oaGVpZ2h0KSwgc3RhbmRhcmRfZGV2aWF0aW9uID0gc2QoaGVpZ2h0KSkKcwpgYGAKClRoaXMgdGFrZXMgb3VyIG9yaWdpbmFsIGRhdGEgdGFibGUgYXMgaW5wdXQsIGZpbHRlcnMgaXQgdG8ga2VlcCBvbmx5IGZlbWFsZXMsIGFuZCB0aGVuIHByb2R1Y2VzIGEgbmV3IHN1bW1hcml6ZWQgdGFibGUgd2l0aCBqdXN0IHRoZSBhdmVyYWdlIGFuZCB0aGUgc3RhbmRhcmQgZGV2aWF0aW9uIG9mIGhlaWdodHMuIFdlIGdldCB0byBjaG9vc2UgdGhlIG5hbWVzIG9mIHRoZSBjb2x1bW5zIG9mIHRoZSByZXN1bHRpbmcgdGFibGUuIEZvciBleGFtcGxlLCBhYm92ZSB3ZSBkZWNpZGVkIHRvIHVzZSBgYXZlcmFnZWAgYW5kIGBzdGFuZGFyZF9kZXZpYXRpb25gLCBidXQgd2UgY291bGQgaGF2ZSB1c2VkIG90aGVyIG5hbWVzIGp1c3QgdGhlIHNhbWUuCgpCZWNhdXNlIHRoZSByZXN1bHRpbmcgdGFibGUgc3RvcmVkIGluIGBzYCBpcyBhIGRhdGEgZnJhbWUsIHdlIGNhbiBhY2Nlc3MgdGhlIGNvbXBvbmVudHMgd2l0aCB0aGUgYWNjZXNzb3IgYCRgOgpgYGB7cn0KcyRhdmVyYWdlCnMkc3RhbmRhcmRfZGV2aWF0aW9uCmBgYAoKQXMgd2l0aCBtb3N0IG90aGVyIGRwbHlyIGZ1bmN0aW9ucywgc3VtbWFyaXplIGlzIGF3YXJlIG9mIHRoZSB2YXJpYWJsZSBuYW1lcyBhbmQgd2UgY2FuIHVzZSB0aGVtIGRpcmVjdGx5LiBTbyB3aGVuIGluc2lkZSB0aGUgY2FsbCB0byB0aGUgc3VtbWFyaXplIGZ1bmN0aW9uIHdlIHdyaXRlIG1lYW4oaGVpZ2h0KSwgdGhlIGZ1bmN0aW9uIGlzIGFjY2Vzc2luZyB0aGUgY29sdW1uIHdpdGggdGhlIG5hbWUg4oCcaGVpZ2h04oCdIGFuZCB0aGVuIGNvbXB1dGluZyB0aGUgYXZlcmFnZSBvZiB0aGUgcmVzdWx0aW5nIG51bWVyaWMgdmVjdG9yLiBXZSBjYW4gY29tcHV0ZSBhbnkgb3RoZXIgc3VtbWFyeSB0aGF0IG9wZXJhdGVzIG9uIHZlY3RvcnMgYW5kIHJldHVybnMgYSBzaW5nbGUgdmFsdWUuIEZvciBleGFtcGxlLCB3ZSBjYW4gYWRkIHRoZSBtZWRpYW4sIG1pbiBhbmQgbWF4IGhlaWdodHMgbGlrZSB0aGlzOgpgYGB7ciBlY2hvPVRSVUUsIHBhZ2VkLnByaW50PUZBTFNFfQpoZWlnaHRzICU+JSAKICBmaWx0ZXIoc2V4ID09ICJGZW1hbGUiKSAlPiUKICBzdW1tYXJpemUobWVkaWFuID0gbWVkaWFuKGhlaWdodCksIG1pbmltdW0gPSBtaW4oaGVpZ2h0KSwgbWF4aW11bSA9IG1heChoZWlnaHQpKQpgYGAKCldlIGNhbiBvYnRhaW4gdGhlc2UgdGhyZWUgdmFsdWVzIHdpdGgganVzdCBvbmUgbGluZSB1c2luZyB0aGUgYHF1YW50aWxlYCBmdW5jdGlvbjogZm9yIGV4YW1wbGUsIGBxdWFudGlsZSh4LCBjKDAsMC41LDEpKWAgcmV0dXJucyB0aGUgbWluICgwdGggcGVyY2VudGlsZSksIG1lZGlhbiAoNTB0aCBwZXJjZW50aWxlKSwgYW5kIG1heCAoMTAwdGggcGVyY2VudGlsZSkgb2YgdGhlIHZlY3RvciBgeGAuIEhvd2V2ZXIsIGlmIHdlIGF0dGVtcHQgdG8gdXNlIGEgZnVuY3Rpb24gbGlrZSB0aGlzIHRoYXQgcmV0dXJucyB0d28gb3IgbW9yZSB2YWx1ZXMgaW5zaWRlIGBzdW1tYXJpemVgOgpgYGB7cn0KaGVpZ2h0cyAlPiUgCiAgZmlsdGVyKHNleCA9PSAiRmVtYWxlIikgJT4lCiAgc3VtbWFyaXplKHJhbmdlID0gcXVhbnRpbGUoaGVpZ2h0LCBjKDAsIDAuNSwgMSkpKQpgYGAKCndlIHdpbGwgcmVjZWl2ZSBhbiBlcnJvcjogYEVycm9yOiBleHBlY3RpbmcgcmVzdWx0IG9mIGxlbmd0aCBvbmUsIGdvdCA6IDJgLiBXaXRoIHRoZSBmdW5jdGlvbiBgc3VtbWFyaXplYCwgd2UgY2FuIG9ubHkgY2FsbCBmdW5jdGlvbnMgdGhhdCByZXR1cm4gYSBzaW5nbGUgdmFsdWUuIEluIFNlY3Rpb24gWzUuMTJdKGh0dHBzOi8vcmFmYWxhYi5naXRodWIuaW8vZHNib29rL3RpZHl2ZXJzZS5odG1sI2RvKSwgd2Ugd2lsbCBsZWFybiBob3cgdG8gZGVhbCB3aXRoIGZ1bmN0aW9ucyB0aGF0IHJldHVybiBtb3JlIHRoYW4gb25lIHZhbHVlLgoKRm9yIGFub3RoZXIgZXhhbXBsZSBvZiBob3cgd2UgY2FuIHVzZSB0aGUgYHN1bW1hcml6ZWAgZnVuY3Rpb24sIGxldOKAmXMgY29tcHV0ZSB0aGUgYXZlcmFnZSBtdXJkZXIgcmF0ZSBmb3IgdGhlIFVuaXRlZCBTdGF0ZXMuIFJlbWVtYmVyIG91ciBkYXRhIHRhYmxlIGluY2x1ZGVzIHRvdGFsIG11cmRlcnMgYW5kIHBvcHVsYXRpb24gc2l6ZSBmb3IgZWFjaCBzdGF0ZSBhbmQgd2UgaGF2ZSBhbHJlYWR5IHVzZWQgKipkcGx5cioqIHRvIGFkZCBhIG11cmRlciByYXRlIGNvbHVtbjoKCmBgYHtyfQpkYXRhKG11cmRlcnMpCm11cmRlcnMgPC0gbXVyZGVycyAlPiUgbXV0YXRlKHJhdGUgPSB0b3RhbC9wb3B1bGF0aW9uKjEwMDAwMCkKYGBgCgpSZW1lbWJlciB0aGF0IHRoZSBVUyBtdXJkZXIgcmF0ZSBpcyBub3QgdGhlIGF2ZXJhZ2Ugb2YgdGhlIHN0YXRlIG11cmRlciByYXRlczoKYGBge3IgcGFnZWQucHJpbnQ9RkFMU0V9CnN1bW1hcml6ZShtdXJkZXJzLCBtZWFuKHJhdGUpKQpgYGAKClRoaXMgaXMgYmVjYXVzZSBpbiB0aGUgY29tcHV0YXRpb24gYWJvdmUgdGhlIHNtYWxsIHN0YXRlcyBhcmUgZ2l2ZW4gdGhlIHNhbWUgd2VpZ2h0IGFzIHRoZSBsYXJnZSBvbmVzLiBUaGUgVVMgbXVyZGVyIHJhdGUgaXMgdGhlIHRvdGFsIG51bWJlciBvZiBtdXJkZXJzIGluIHRoZSBVUyBkaXZpZGVkIGJ5IHRoZSB0b3RhbCBVUyBwb3B1bGF0aW9uLiBTbyB0aGUgY29ycmVjdCBjb21wdXRhdGlvbiBpczoKYGBge3IgcGFnZWQucHJpbnQ9RkFMU0V9CnVzX211cmRlcl9yYXRlIDwtIG11cmRlcnMgJT4lCiAgc3VtbWFyaXplKHJhdGUgPSBzdW0odG90YWwpIC8gc3VtKHBvcHVsYXRpb24pICogMTAwMDAwKQp1c19tdXJkZXJfcmF0ZQpgYGAKClRoaXMgY29tcHV0YXRpb24gY291bnRzIGxhcmdlciBzdGF0ZXMgcHJvcG9ydGlvbmFsbHkgdG8gdGhlaXIgc2l6ZSB3aGljaCByZXN1bHRzIGluIGEgbGFyZ2VyIHZhbHVlLgoKIyMjIDUuNy4yIGBwdWxsYAoKVGhlIGB1c19tdXJkZXJfcmF0ZWAgb2JqZWN0IGRlZmluZWQgYWJvdmUgcmVwcmVzZW50cyBqdXN0IG9uZSBudW1iZXIuIFlldCB3ZSBhcmUgc3RvcmluZyBpdCBpbiBhIGRhdGEgZnJhbWU6CmBgYHtyfQpjbGFzcyh1c19tdXJkZXJfcmF0ZSkKYGBgCnNpbmNlLCBhcyBtb3N0ICoqZHBseXIqKiBmdW5jdGlvbnMsIGBzdW1tYXJpemVgIGFsd2F5cyByZXR1cm5zIGEgZGF0YSBmcmFtZS4KClRoaXMgbWlnaHQgYmUgcHJvYmxlbWF0aWMgaWYgd2Ugd2FudCB0byB1c2UgdGhpcyByZXN1bHQgd2l0aCBmdW5jdGlvbnMgdGhhdCByZXF1aXJlIGEgbnVtZXJpYyB2YWx1ZS4gSGVyZSB3ZSBzaG93IGEgdXNlZnVsIHRyaWNrIGZvciBhY2Nlc3NpbmcgdmFsdWVzIHN0b3JlZCBpbiBkYXRhIHdoZW4gdXNpbmcgcGlwZXM6IHdoZW4gYSBkYXRhIG9iamVjdCBpcyBwaXBlZCB0aGF0IG9iamVjdCBhbmQgaXRzIGNvbHVtbnMgY2FuIGJlIGFjY2Vzc2VkIHVzaW5nIHRoZSBgcHVsbGAgZnVuY3Rpb24uIFRvIHVuZGVyc3RhbmQgd2hhdCB3ZSBtZWFuIHRha2UgYSBsb29rIGF0IHRoaXMgbGluZSBvZiBjb2RlOgoKYGBge3J9CnVzX211cmRlcl9yYXRlICU+JSBwdWxsKHJhdGUpCmBgYAoKVGhpcyByZXR1cm5zIHRoZSB2YWx1ZSBpbiB0aGUgcmF0ZSBjb2x1bW4gb2YgYHVzX211cmRlcl9yYXRlYCBtYWtpbmcgaXQgZXF1aXZhbGVudCB0byBgdXNfbXVyZGVyX3JhdGUkcmF0ZWAuCgpUbyBnZXQgYSBudW1iZXIgZnJvbSB0aGUgb3JpZ2luYWwgZGF0YSB0YWJsZSB3aXRoIG9uZSBsaW5lIG9mIGNvZGUgd2UgY2FuIHR5cGU6CmBgYHtyfQp1c19tdXJkZXJfcmF0ZSA8LSBtdXJkZXJzICU+JSAKICBzdW1tYXJpemUocmF0ZSA9IHN1bSh0b3RhbCkgLyBzdW0ocG9wdWxhdGlvbikgKiAxMDAwMDApICU+JQogIHB1bGwocmF0ZSkKCnVzX211cmRlcl9yYXRlCmBgYAoKd2hpY2ggaXMgbm93IGEgbnVtZXJpYzoKYGBge3J9CmNsYXNzKHVzX211cmRlcl9yYXRlKQpgYGAKCiMjIyA1LjcuMyBHcm91cCB0aGVuIHN1bW1hcml6ZSB3aXRoIGBncm91cF9ieWAKCkEgY29tbW9uIG9wZXJhdGlvbiBpbiBkYXRhIGV4cGxvcmF0aW9uIGlzIHRvIGZpcnN0IHNwbGl0IGRhdGEgaW50byBncm91cHMgYW5kIHRoZW4gY29tcHV0ZSBzdW1tYXJpZXMgZm9yIGVhY2ggZ3JvdXAuIEZvciBleGFtcGxlLCB3ZSBtYXkgd2FudCB0byBjb21wdXRlIHRoZSBhdmVyYWdlIGFuZCBzdGFuZGFyZCBkZXZpYXRpb24gZm9yIG1lbuKAmXMgYW5kIHdvbWVu4oCZcyBoZWlnaHRzIHNlcGFyYXRlbHkuIFRoZSBncm91cF9ieSBmdW5jdGlvbiBoZWxwcyB1cyBkbyB0aGlzLgoKSWYgd2UgdHlwZSB0aGlzOgpgYGB7ciBlY2hvPVRSVUUsIHBhZ2VkLnByaW50PUZBTFNFfQpoZWlnaHRzICU+JSBncm91cF9ieShzZXgpCmBgYAoKVGhlIHJlc3VsdCBkb2VzIG5vdCBsb29rIHZlcnkgZGlmZmVyZW50IGZyb20gYGhlaWdodHNgLCBleGNlcHQgd2Ugc2VlIGBHcm91cHM6IHNleCBbMl1gIHdoZW4gd2UgcHJpbnQgdGhlIG9iamVjdC4gQWx0aG91Z2ggbm90IGltbWVkaWF0ZWx5IG9idmlvdXMgZnJvbSBpdHMgYXBwZWFyYW5jZSwgdGhpcyBpcyBub3cgYSBzcGVjaWFsIGRhdGEgZnJhbWUgY2FsbGVkIGEgX2dyb3VwZWQgZGF0YSBmcmFtZV8gYW5kICoqZHBseXIqKiBmdW5jdGlvbnMsIGluIHBhcnRpY3VsYXIgYHN1bW1hcml6ZWAsIHdpbGwgYmVoYXZlIGRpZmZlcmVudGx5IHdoZW4gYWN0aW5nIG9uIHRoaXMgb2JqZWN0LiBDb25jZXB0dWFsbHksIHlvdSBjYW4gdGhpbmsgb2YgdGhpcyB0YWJsZSBhcyBtYW55IHRhYmxlcywgd2l0aCB0aGUgc2FtZSBjb2x1bW5zIGJ1dCBub3QgbmVjZXNzYXJpbHkgdGhlIHNhbWUgbnVtYmVyIG9mIHJvd3MsIHN0YWNrZWQgdG9nZXRoZXIgaW4gb25lIG9iamVjdC4gV2hlbiB3ZSBzdW1tYXJpemUgdGhlIGRhdGEgYWZ0ZXIgZ3JvdXBpbmcsIHRoaXMgaXMgd2hhdCBoYXBwZW5zOgoKYGBge3IgZWNobz1UUlVFLCBwYWdlZC5wcmludD1GQUxTRX0KaGVpZ2h0cyAlPiUgCiAgZ3JvdXBfYnkoc2V4KSAlPiUKICBzdW1tYXJpemUoYXZlcmFnZSA9IG1lYW4oaGVpZ2h0KSwgc3RhbmRhcmRfZGV2aWF0aW9uID0gc2QoaGVpZ2h0KSkKYGBgCgpUaGUgYHN1bW1hcml6ZWAgZnVuY3Rpb24gYXBwbGllcyB0aGUgc3VtbWFyaXphdGlvbiB0byBlYWNoIGdyb3VwIHNlcGFyYXRlbHkuCgpGb3IgYW5vdGhlciBleGFtcGxlLCBsZXTigJlzIGNvbXB1dGUgdGhlIG1lZGlhbiBtdXJkZXIgcmF0ZSBpbiB0aGUgZm91ciByZWdpb25zIG9mIHRoZSBjb3VudHJ5OgoK</div>
+<div id="rmd-source-code">Ci0tLQpvdXRwdXQ6IAogIGh0bWxfbm90ZWJvb2s6IAogICAgdG9jOiB5ZXMKZWRpdG9yX29wdGlvbnM6IAogIGNodW5rX291dHB1dF90eXBlOiBpbmxpbmUKLS0tCj4gW1ByZXZpb3VzXShodHRwczovL21hcmtkajAuZ2l0aHViLmlvL2JzbXMyMjJfMTMyX2tpbS8pCgojIyA1LjcgU3VtbWFyaXppbmcgZGF0YQoKQW4gaW1wb3J0YW50IHBhcnQgb2YgZXhwbG9yYXRvcnkgZGF0YSBhbmFseXNpcyBpcyBzdW1tYXJpemluZyBkYXRhLiBUaGUgYXZlcmFnZSBhbmQgc3RhbmRhcmQgZGV2aWF0aW9uIGFyZSB0d28gZXhhbXBsZXMgb2Ygd2lkZWx5IHVzZWQgc3VtbWFyeSBzdGF0aXN0aWNzLiBNb3JlIGluZm9ybWF0aXZlIHN1bW1hcmllcyBjYW4gb2Z0ZW4gYmUgYWNoaWV2ZWQgYnkgZmlyc3Qgc3BsaXR0aW5nIGRhdGEgaW50byBncm91cHMuIEluIHRoaXMgc2VjdGlvbiwgd2UgY292ZXIgdHdvIG5ldyAqKmRwbHlyKiogdmVyYnMgdGhhdCBtYWtlIHRoZXNlIGNvbXB1dGF0aW9ucyBlYXNpZXI6IGBzdW1tYXJpemVgIGFuZCBgZ3JvdXBfYnlgLiBXZSBsZWFybiB0byBhY2Nlc3MgcmVzdWx0aW5nIHZhbHVlcyB1c2luZyB0aGUgYHB1bGxgIGZ1bmN0aW9uLgoKIyMjIDUuNy4xIGBzdW1tYXJpemVgCgpUaGUgYHN1bW1hcml6ZWAgZnVuY3Rpb24gaW4gKipkcGx5cioqIHByb3ZpZGVzIGEgd2F5IHRvIGNvbXB1dGUgc3VtbWFyeSBzdGF0aXN0aWNzIHdpdGggaW50dWl0aXZlIGFuZCByZWFkYWJsZSBjb2RlLiBXZSBzdGFydCB3aXRoIGEgc2ltcGxlIGV4YW1wbGUgYmFzZWQgb24gaGVpZ2h0cy4gVGhlIGBoZWlnaHRzYCBkYXRhc2V0IGluY2x1ZGVzIGhlaWdodHMgYW5kIHNleCByZXBvcnRlZCBieSBzdHVkZW50cyBpbiBhbiBpbi1jbGFzcyBzdXJ2ZXkuCmBgYHtyfQpsaWJyYXJ5KGRwbHlyKQpsaWJyYXJ5KGRzbGFicykKZGF0YShoZWlnaHRzKQpgYGAKClRoZSBmb2xsb3dpbmcgY29kZSBjb21wdXRlcyB0aGUgYXZlcmFnZSBhbmQgc3RhbmRhcmQgZGV2aWF0aW9uIGZvciBmZW1hbGVzOgpgYGB7ciBwYWdlZC5wcmludD1GQUxTRX0KcyA8LSBoZWlnaHRzICU+JSAKICBmaWx0ZXIoc2V4ID09ICJGZW1hbGUiKSAlPiUKICBzdW1tYXJpemUoYXZlcmFnZSA9IG1lYW4oaGVpZ2h0KSwgc3RhbmRhcmRfZGV2aWF0aW9uID0gc2QoaGVpZ2h0KSkKcwpgYGAKClRoaXMgdGFrZXMgb3VyIG9yaWdpbmFsIGRhdGEgdGFibGUgYXMgaW5wdXQsIGZpbHRlcnMgaXQgdG8ga2VlcCBvbmx5IGZlbWFsZXMsIGFuZCB0aGVuIHByb2R1Y2VzIGEgbmV3IHN1bW1hcml6ZWQgdGFibGUgd2l0aCBqdXN0IHRoZSBhdmVyYWdlIGFuZCB0aGUgc3RhbmRhcmQgZGV2aWF0aW9uIG9mIGhlaWdodHMuIFdlIGdldCB0byBjaG9vc2UgdGhlIG5hbWVzIG9mIHRoZSBjb2x1bW5zIG9mIHRoZSByZXN1bHRpbmcgdGFibGUuIEZvciBleGFtcGxlLCBhYm92ZSB3ZSBkZWNpZGVkIHRvIHVzZSBgYXZlcmFnZWAgYW5kIGBzdGFuZGFyZF9kZXZpYXRpb25gLCBidXQgd2UgY291bGQgaGF2ZSB1c2VkIG90aGVyIG5hbWVzIGp1c3QgdGhlIHNhbWUuCgpCZWNhdXNlIHRoZSByZXN1bHRpbmcgdGFibGUgc3RvcmVkIGluIGBzYCBpcyBhIGRhdGEgZnJhbWUsIHdlIGNhbiBhY2Nlc3MgdGhlIGNvbXBvbmVudHMgd2l0aCB0aGUgYWNjZXNzb3IgYCRgOgpgYGB7ciBwYWdlZC5wcmludD1GQUxTRX0KcyRhdmVyYWdlCnMkc3RhbmRhcmRfZGV2aWF0aW9uCmBgYAoKQXMgd2l0aCBtb3N0IG90aGVyIGRwbHlyIGZ1bmN0aW9ucywgc3VtbWFyaXplIGlzIGF3YXJlIG9mIHRoZSB2YXJpYWJsZSBuYW1lcyBhbmQgd2UgY2FuIHVzZSB0aGVtIGRpcmVjdGx5LiBTbyB3aGVuIGluc2lkZSB0aGUgY2FsbCB0byB0aGUgc3VtbWFyaXplIGZ1bmN0aW9uIHdlIHdyaXRlIG1lYW4oaGVpZ2h0KSwgdGhlIGZ1bmN0aW9uIGlzIGFjY2Vzc2luZyB0aGUgY29sdW1uIHdpdGggdGhlIG5hbWUg4oCcaGVpZ2h04oCdIGFuZCB0aGVuIGNvbXB1dGluZyB0aGUgYXZlcmFnZSBvZiB0aGUgcmVzdWx0aW5nIG51bWVyaWMgdmVjdG9yLiBXZSBjYW4gY29tcHV0ZSBhbnkgb3RoZXIgc3VtbWFyeSB0aGF0IG9wZXJhdGVzIG9uIHZlY3RvcnMgYW5kIHJldHVybnMgYSBzaW5nbGUgdmFsdWUuIEZvciBleGFtcGxlLCB3ZSBjYW4gYWRkIHRoZSBtZWRpYW4sIG1pbiBhbmQgbWF4IGhlaWdodHMgbGlrZSB0aGlzOgpgYGB7ciBlY2hvPVRSVUUsIHBhZ2VkLnByaW50PUZBTFNFfQpoZWlnaHRzICU+JSAKICBmaWx0ZXIoc2V4ID09ICJGZW1hbGUiKSAlPiUKICBzdW1tYXJpemUobWVkaWFuID0gbWVkaWFuKGhlaWdodCksIG1pbmltdW0gPSBtaW4oaGVpZ2h0KSwgbWF4aW11bSA9IG1heChoZWlnaHQpKQpgYGAKCldlIGNhbiBvYnRhaW4gdGhlc2UgdGhyZWUgdmFsdWVzIHdpdGgganVzdCBvbmUgbGluZSB1c2luZyB0aGUgYHF1YW50aWxlYCBmdW5jdGlvbjogZm9yIGV4YW1wbGUsIGBxdWFudGlsZSh4LCBjKDAsMC41LDEpKWAgcmV0dXJucyB0aGUgbWluICgwdGggcGVyY2VudGlsZSksIG1lZGlhbiAoNTB0aCBwZXJjZW50aWxlKSwgYW5kIG1heCAoMTAwdGggcGVyY2VudGlsZSkgb2YgdGhlIHZlY3RvciBgeGAuIEhvd2V2ZXIsIGlmIHdlIGF0dGVtcHQgdG8gdXNlIGEgZnVuY3Rpb24gbGlrZSB0aGlzIHRoYXQgcmV0dXJucyB0d28gb3IgbW9yZSB2YWx1ZXMgaW5zaWRlIGBzdW1tYXJpemVgOgpgYGB7ciBwYWdlZC5wcmludD1GQUxTRX0KaGVpZ2h0cyAlPiUgCiAgZmlsdGVyKHNleCA9PSAiRmVtYWxlIikgJT4lCiAgc3VtbWFyaXplKHJhbmdlID0gcXVhbnRpbGUoaGVpZ2h0LCBjKDAsIDAuNSwgMSkpKQpgYGAKCndlIHdpbGwgcmVjZWl2ZSBhbiBlcnJvcjogYEVycm9yOiBleHBlY3RpbmcgcmVzdWx0IG9mIGxlbmd0aCBvbmUsIGdvdCA6IDJgLiBXaXRoIHRoZSBmdW5jdGlvbiBgc3VtbWFyaXplYCwgd2UgY2FuIG9ubHkgY2FsbCBmdW5jdGlvbnMgdGhhdCByZXR1cm4gYSBzaW5nbGUgdmFsdWUuIEluIFNlY3Rpb24gWzUuMTJdKGh0dHBzOi8vcmFmYWxhYi5naXRodWIuaW8vZHNib29rL3RpZHl2ZXJzZS5odG1sI2RvKSwgd2Ugd2lsbCBsZWFybiBob3cgdG8gZGVhbCB3aXRoIGZ1bmN0aW9ucyB0aGF0IHJldHVybiBtb3JlIHRoYW4gb25lIHZhbHVlLgoKRm9yIGFub3RoZXIgZXhhbXBsZSBvZiBob3cgd2UgY2FuIHVzZSB0aGUgYHN1bW1hcml6ZWAgZnVuY3Rpb24sIGxldOKAmXMgY29tcHV0ZSB0aGUgYXZlcmFnZSBtdXJkZXIgcmF0ZSBmb3IgdGhlIFVuaXRlZCBTdGF0ZXMuIFJlbWVtYmVyIG91ciBkYXRhIHRhYmxlIGluY2x1ZGVzIHRvdGFsIG11cmRlcnMgYW5kIHBvcHVsYXRpb24gc2l6ZSBmb3IgZWFjaCBzdGF0ZSBhbmQgd2UgaGF2ZSBhbHJlYWR5IHVzZWQgKipkcGx5cioqIHRvIGFkZCBhIG11cmRlciByYXRlIGNvbHVtbjoKCmBgYHtyIHBhZ2VkLnByaW50PUZBTFNFfQpkYXRhKG11cmRlcnMpCm11cmRlcnMgPC0gbXVyZGVycyAlPiUgbXV0YXRlKHJhdGUgPSB0b3RhbC9wb3B1bGF0aW9uKjEwMDAwMCkKYGBgCgpSZW1lbWJlciB0aGF0IHRoZSBVUyBtdXJkZXIgcmF0ZSBpcyBub3QgdGhlIGF2ZXJhZ2Ugb2YgdGhlIHN0YXRlIG11cmRlciByYXRlczoKYGBge3IgcGFnZWQucHJpbnQ9RkFMU0V9CnN1bW1hcml6ZShtdXJkZXJzLCBtZWFuKHJhdGUpKQpgYGAKClRoaXMgaXMgYmVjYXVzZSBpbiB0aGUgY29tcHV0YXRpb24gYWJvdmUgdGhlIHNtYWxsIHN0YXRlcyBhcmUgZ2l2ZW4gdGhlIHNhbWUgd2VpZ2h0IGFzIHRoZSBsYXJnZSBvbmVzLiBUaGUgVVMgbXVyZGVyIHJhdGUgaXMgdGhlIHRvdGFsIG51bWJlciBvZiBtdXJkZXJzIGluIHRoZSBVUyBkaXZpZGVkIGJ5IHRoZSB0b3RhbCBVUyBwb3B1bGF0aW9uLiBTbyB0aGUgY29ycmVjdCBjb21wdXRhdGlvbiBpczoKYGBge3IgcGFnZWQucHJpbnQ9RkFMU0V9CnVzX211cmRlcl9yYXRlIDwtIG11cmRlcnMgJT4lCiAgc3VtbWFyaXplKHJhdGUgPSBzdW0odG90YWwpIC8gc3VtKHBvcHVsYXRpb24pICogMTAwMDAwKQp1c19tdXJkZXJfcmF0ZQpgYGAKClRoaXMgY29tcHV0YXRpb24gY291bnRzIGxhcmdlciBzdGF0ZXMgcHJvcG9ydGlvbmFsbHkgdG8gdGhlaXIgc2l6ZSB3aGljaCByZXN1bHRzIGluIGEgbGFyZ2VyIHZhbHVlLgoKIyMjIDUuNy4yIGBwdWxsYAoKVGhlIGB1c19tdXJkZXJfcmF0ZWAgb2JqZWN0IGRlZmluZWQgYWJvdmUgcmVwcmVzZW50cyBqdXN0IG9uZSBudW1iZXIuIFlldCB3ZSBhcmUgc3RvcmluZyBpdCBpbiBhIGRhdGEgZnJhbWU6CmBgYHtyfQpjbGFzcyh1c19tdXJkZXJfcmF0ZSkKYGBgCgpzaW5jZSwgYXMgbW9zdCAqKmRwbHlyKiogZnVuY3Rpb25zLCBgc3VtbWFyaXplYCBhbHdheXMgcmV0dXJucyBhIGRhdGEgZnJhbWUuCgpUaGlzIG1pZ2h0IGJlIHByb2JsZW1hdGljIGlmIHdlIHdhbnQgdG8gdXNlIHRoaXMgcmVzdWx0IHdpdGggZnVuY3Rpb25zIHRoYXQgcmVxdWlyZSBhIG51bWVyaWMgdmFsdWUuIEhlcmUgd2Ugc2hvdyBhIHVzZWZ1bCB0cmljayBmb3IgYWNjZXNzaW5nIHZhbHVlcyBzdG9yZWQgaW4gZGF0YSB3aGVuIHVzaW5nIHBpcGVzOiB3aGVuIGEgZGF0YSBvYmplY3QgaXMgcGlwZWQgdGhhdCBvYmplY3QgYW5kIGl0cyBjb2x1bW5zIGNhbiBiZSBhY2Nlc3NlZCB1c2luZyB0aGUgYHB1bGxgIGZ1bmN0aW9uLiBUbyB1bmRlcnN0YW5kIHdoYXQgd2UgbWVhbiB0YWtlIGEgbG9vayBhdCB0aGlzIGxpbmUgb2YgY29kZToKCmBgYHtyfQp1c19tdXJkZXJfcmF0ZSAlPiUgcHVsbChyYXRlKQpgYGAKClRoaXMgcmV0dXJucyB0aGUgdmFsdWUgaW4gdGhlIHJhdGUgY29sdW1uIG9mIGB1c19tdXJkZXJfcmF0ZWAgbWFraW5nIGl0IGVxdWl2YWxlbnQgdG8gYHVzX211cmRlcl9yYXRlJHJhdGVgLgoKVG8gZ2V0IGEgbnVtYmVyIGZyb20gdGhlIG9yaWdpbmFsIGRhdGEgdGFibGUgd2l0aCBvbmUgbGluZSBvZiBjb2RlIHdlIGNhbiB0eXBlOgpgYGB7cn0KdXNfbXVyZGVyX3JhdGUgPC0gbXVyZGVycyAlPiUgCiAgc3VtbWFyaXplKHJhdGUgPSBzdW0odG90YWwpIC8gc3VtKHBvcHVsYXRpb24pICogMTAwMDAwKSAlPiUKICBwdWxsKHJhdGUpCgp1c19tdXJkZXJfcmF0ZQpgYGAKCndoaWNoIGlzIG5vdyBhIG51bWVyaWM6CmBgYHtyfQpjbGFzcyh1c19tdXJkZXJfcmF0ZSkKYGBgCgojIyMgNS43LjMgR3JvdXAgdGhlbiBzdW1tYXJpemUgd2l0aCBgZ3JvdXBfYnlgCgpBIGNvbW1vbiBvcGVyYXRpb24gaW4gZGF0YSBleHBsb3JhdGlvbiBpcyB0byBmaXJzdCBzcGxpdCBkYXRhIGludG8gZ3JvdXBzIGFuZCB0aGVuIGNvbXB1dGUgc3VtbWFyaWVzIGZvciBlYWNoIGdyb3VwLiBGb3IgZXhhbXBsZSwgd2UgbWF5IHdhbnQgdG8gY29tcHV0ZSB0aGUgYXZlcmFnZSBhbmQgc3RhbmRhcmQgZGV2aWF0aW9uIGZvciBtZW7igJlzIGFuZCB3b21lbuKAmXMgaGVpZ2h0cyBzZXBhcmF0ZWx5LiBUaGUgZ3JvdXBfYnkgZnVuY3Rpb24gaGVscHMgdXMgZG8gdGhpcy4KCklmIHdlIHR5cGUgdGhpczoKYGBge3IgZWNobz1UUlVFLCBwYWdlZC5wcmludD1GQUxTRX0KaGVpZ2h0cyAlPiUgZ3JvdXBfYnkoc2V4KQpgYGAKClRoZSByZXN1bHQgZG9lcyBub3QgbG9vayB2ZXJ5IGRpZmZlcmVudCBmcm9tIGBoZWlnaHRzYCwgZXhjZXB0IHdlIHNlZSBgR3JvdXBzOiBzZXggWzJdYCB3aGVuIHdlIHByaW50IHRoZSBvYmplY3QuIEFsdGhvdWdoIG5vdCBpbW1lZGlhdGVseSBvYnZpb3VzIGZyb20gaXRzIGFwcGVhcmFuY2UsIHRoaXMgaXMgbm93IGEgc3BlY2lhbCBkYXRhIGZyYW1lIGNhbGxlZCBhIF9ncm91cGVkIGRhdGEgZnJhbWVfIGFuZCAqKmRwbHlyKiogZnVuY3Rpb25zLCBpbiBwYXJ0aWN1bGFyIGBzdW1tYXJpemVgLCB3aWxsIGJlaGF2ZSBkaWZmZXJlbnRseSB3aGVuIGFjdGluZyBvbiB0aGlzIG9iamVjdC4gQ29uY2VwdHVhbGx5LCB5b3UgY2FuIHRoaW5rIG9mIHRoaXMgdGFibGUgYXMgbWFueSB0YWJsZXMsIHdpdGggdGhlIHNhbWUgY29sdW1ucyBidXQgbm90IG5lY2Vzc2FyaWx5IHRoZSBzYW1lIG51bWJlciBvZiByb3dzLCBzdGFja2VkIHRvZ2V0aGVyIGluIG9uZSBvYmplY3QuIFdoZW4gd2Ugc3VtbWFyaXplIHRoZSBkYXRhIGFmdGVyIGdyb3VwaW5nLCB0aGlzIGlzIHdoYXQgaGFwcGVuczoKCmBgYHtyIGVjaG89VFJVRSwgcGFnZWQucHJpbnQ9RkFMU0V9CmhlaWdodHMgJT4lIAogIGdyb3VwX2J5KHNleCkgJT4lCiAgc3VtbWFyaXplKGF2ZXJhZ2UgPSBtZWFuKGhlaWdodCksIHN0YW5kYXJkX2RldmlhdGlvbiA9IHNkKGhlaWdodCkpCmBgYAoKVGhlIGBzdW1tYXJpemVgIGZ1bmN0aW9uIGFwcGxpZXMgdGhlIHN1bW1hcml6YXRpb24gdG8gZWFjaCBncm91cCBzZXBhcmF0ZWx5LgoKRm9yIGFub3RoZXIgZXhhbXBsZSwgbGV04oCZcyBjb21wdXRlIHRoZSBtZWRpYW4gbXVyZGVyIHJhdGUgaW4gdGhlIGZvdXIgcmVnaW9ucyBvZiB0aGUgY291bnRyeToKYGBge3IgZWNobz1UUlVFLCBwYWdlZC5wcmludD1GQUxTRX0KbXVyZGVycyAlPiUgCiAgZ3JvdXBfYnkocmVnaW9uKSAlPiUKICBzdW1tYXJpemUobWVkaWFuX3JhdGUgPSBtZWRpYW4ocmF0ZSkpCmBgYAoKIyMjIDUuOCBTb3J0aW5nIGRhdGEgZnJhbWVzCgpXaGVuIGV4YW1pbmluZyBhIGRhdGFzZXQsIGl0IGlzIG9mdGVuIGNvbnZlbmllbnQgdG8gc29ydCB0aGUgdGFibGUgYnkgdGhlIGRpZmZlcmVudCBjb2x1bW5zLiBXZSBrbm93IGFib3V0IHRoZSBgb3JkZXJgIGFuZCBgc29ydGAgZnVuY3Rpb24sIGJ1dCBmb3Igb3JkZXJpbmcgZW50aXJlIHRhYmxlcywgdGhlICoqZHBseXIqKiBmdW5jdGlvbiBgYXJyYW5nZWAgaXMgdXNlZnVsLiBGb3IgZXhhbXBsZSwgaGVyZSB3ZSBvcmRlciB0aGUgc3RhdGVzIGJ5IHBvcHVsYXRpb24gc2l6ZToKYGBge3IgcGFnZWQucHJpbnQ9RkFMU0V9Cm11cmRlcnMgJT4lCiAgYXJyYW5nZShwb3B1bGF0aW9uKSAlPiUKICBoZWFkKCkKYGBgCgpXaXRoIGBhcnJhbmdlYCB3ZSBnZXQgdG8gZGVjaWRlIHdoaWNoIGNvbHVtbiB0byBzb3J0IGJ5LiBUbyBzZWUgdGhlIHN0YXRlcyBieSBwb3B1bGF0aW9uLCBmcm9tIHNtYWxsZXN0IHRvIGxhcmdlc3QsIHdlIGFycmFuZ2UgYnkgYHJhdGVgIGluc3RlYWQ6CmBgYHtyIHBhZ2VkLnByaW50PUZBTFNFfQptdXJkZXJzICU+JSAKICBhcnJhbmdlKHJhdGUpICU+JSAKICBoZWFkKCkKYGBgCgpOb3RlIHRoYXQgdGhlIGRlZmF1bHQgYmVoYXZpb3IgaXMgdG8gb3JkZXIgaW4gYXNjZW5kaW5nIG9yZGVyLiBJbiAqKmRwbHlyKiosIHRoZSBmdW5jdGlvbiBgZGVzY2AgdHJhbnNmb3JtcyBhIHZlY3RvciBzbyB0aGF0IGl0IGlzIGluIGRlc2NlbmRpbmcgb3JkZXIuIFRvIHNvcnQgdGhlIHRhYmxlIGluIGRlc2NlbmRpbmcgb3JkZXIsIHdlIGNhbiB0eXBlOgpgYGB7ciBlY2hvPVRSVUUsIHBhZ2VkLnByaW50PUZBTFNFfQptdXJkZXJzICU+JSAKICBhcnJhbmdlKGRlc2MocmF0ZSkpICU+JSAKICBoZWFkKCkKYGBgCgojIyMgNS44LjEgTmVzdGVkIHNvcnRpbmcKCklmIHdlIGFyZSBvcmRlcmluZyBieSBhIGNvbHVtbiB3aXRoIHRpZXMsIHdlIGNhbiB1c2UgYSBzZWNvbmQgY29sdW1uIHRvIGJyZWFrIHRoZSB0aWUuIFNpbWlsYXJseSwgYSB0aGlyZCBjb2x1bW4gY2FuIGJlIHVzZWQgdG8gYnJlYWsgdGllcyBiZXR3ZWVuIGZpcnN0IGFuZCBzZWNvbmQgYW5kIHNvIG9uLiBIZXJlIHdlIG9yZGVyIGJ5IGByZWdpb25gLCB0aGVuIHdpdGhpbiByZWdpb24gd2Ugb3JkZXIgYnkgbXVyZGVyIHJhdGU6CmBgYHtyIGVjaG89VFJVRSwgcGFnZWQucHJpbnQ9RkFMU0V9Cm11cmRlcnMgJT4lIAogIGFycmFuZ2UocmVnaW9uLCByYXRlKSAlPiUgCiAgaGVhZCgpCmBgYAoKIyMjIDUuOC4yIFRoZSB0b3AgJG4kCgpJbiB0aGUgY29kZSBhYm92ZSwgd2UgaGF2ZSB1c2VkIHRoZSBmdW5jdGlvbiBgaGVhZGAgdG8gYXZvaWQgaGF2aW5nIHRoZSBwYWdlIGZpbGwgdXAgd2l0aCB0aGUgZW50aXJlIGRhdGFzZXQuIElmIHdlIHdhbnQgdG8gc2VlIGEgbGFyZ2VyIHByb3BvcnRpb24sIHdlIGNhbiB1c2UgdGhlIGB0b3BfbmAgZnVuY3Rpb24uIFRoaXMgZnVuY3Rpb24gdGFrZXMgYSBkYXRhIGZyYW1lIGFzIGl04oCZcyBmaXJzdCBhcmd1bWVudCwgdGhlIG51bWJlciBvZiByb3dzIHRvIHNob3cgaW4gdGhlIHNlY29uZCwgYW5kIHRoZSB2YXJpYWJsZSB0byBmaWx0ZXIgYnkgaW4gdGhlIHRoaXJkLiBIZXJlIGlzIGFuIGV4YW1wbGUgb2YgaG93IHRvIHNlZSB0aGUgdG9wIDEwIHJvd3M6CmBgYHtyIGVjaG89VFJVRSwgcGFnZWQucHJpbnQ9RkFMU0V9Cm11cmRlcnMgJT4lIHRvcF9uKDEwLCByYXRlKQpgYGAKCk5vdGUgdGhhdCByb3dzIGFyZSBub3Qgc29ydGVkIGJ5IGByYXRlYCwgb25seSBmaWx0ZXJlZC4gSWYgd2FudCB0byBzb3J0LCB3ZSBuZWVkIHRvIHVzZSBgYXJyYW5nZWAuIE5vdGUgdGhhdCBpZiB0aGUgdGhpcmQgYXJndW1lbnQgaXMgbGVmdCBibGFuaywgYHRvcF9uYCwgZmlsdGVycyBieSB0aGUgbGFzdCBjb2x1bW4uCgojIyA1LjkgRXhlcmNpc2VzCgpGb3IgdGhlc2UgZXhlcmNpc2VzLCB3ZSB3aWxsIGJlIHVzaW5nIHRoZSBkYXRhIGZyb20gdGhlIHN1cnZleSBjb2xsZWN0ZWQgYnkgdGhlIFVuaXRlZCBTdGF0ZXMgTmF0aW9uYWwgQ2VudGVyIGZvciBIZWFsdGggU3RhdGlzdGljcyAoTkNIUykuIFRoaXMgY2VudGVyIGhhcyBjb25kdWN0ZWQgYSBzZXJpZXMgb2YgaGVhbHRoIGFuZCBudXRyaXRpb24gc3VydmV5cyBzaW5jZSB0aGUgMTk2MOKAmXMuIFN0YXJ0aW5nIGluIDE5OTksIGFib3V0IDUsMDAwIGluZGl2aWR1YWxzIG9mIGFsbCBhZ2VzIGhhdmUgYmVlbiBpbnRlcnZpZXdlZCBldmVyeSB5ZWFyIGFuZCB0aGV5IGNvbXBsZXRlIHRoZSBoZWFsdGggZXhhbWluYXRpb24gY29tcG9uZW50IG9mIHRoZSBzdXJ2ZXkuIFBhcnQgb2YgdGhlIGRhdGEgaXMgbWFkZSBhdmFpbGFibGUgdmlhIHRoZSAqKk5IQU5FUyoqIHBhY2thZ2UuIE9uY2UgeW91IGluc3RhbGwgdGhlICoqTkhBTkVTKiogcGFja2FnZSwgeW91IGNhbiBsb2FkIHRoZSBkYXRhIGxpa2UgdGhpczoKYGBge3J9CmxpYnJhcnkoTkhBTkVTKQpkYXRhKE5IQU5FUykKYGBgCgpUaGUgKipOSEFORVMqKiBkYXRhIGhhcyBtYW55IG1pc3NpbmcgdmFsdWVzLiBSZW1lbWJlciB0aGF0IHRoZSBtYWluIHN1bW1hcml6YXRpb24gZnVuY3Rpb24gaW4gUiB3aWxsIHJldHVybiBgTkFgIGlmIGFueSBvZiB0aGUgZW50cmllcyBvZiB0aGUgaW5wdXQgdmVjdG9yIGlzIGFuIGBOQWAuIEhlcmUgaXMgYW4gZXhhbXBsZToKYGBge3J9CmxpYnJhcnkoZHNsYWJzKQpkYXRhKG5hX2V4YW1wbGUpCm1lYW4obmFfZXhhbXBsZSkKc2QobmFfZXhhbXBsZSkKYGBgCgpUbyBpZ25vcmUgdGhlIGBOQWBzIHdlIGNhbiB1c2UgdGhlIGBuYS5ybWAgYXJndW1lbnQ6CmBgYHtyIHBhZ2VkLnByaW50PUZBTFNFfQptZWFuKG5hX2V4YW1wbGUsIG5hLnJtID0gVFJVRSkKc2QobmFfZXhhbXBsZSwgbmEucm0gPSBUUlVFKQpgYGAKCkxldOKAmXMgbm93IGV4cGxvcmUgdGhlIE5IQU5FUyBkYXRhLgoKMS4gV2Ugd2lsbCBwcm92aWRlIHNvbWUgYmFzaWMgZmFjdHMgYWJvdXQgYmxvb2QgcHJlc3N1cmUuIEZpcnN0IGxldOKAmXMgc2VsZWN0IGEgZ3JvdXAgdG8gc2V0IHRoZSBzdGFuZGFyZC4gV2Ugd2lsbCB1c2UgMjAtMjkgeWVhciBvbGQgZmVtYWxlcy4gYEFnZURlY2FkZWAgaXMgYSBjYXRlZ29yaWNhbCB2YXJpYWJsZSB3aXRoIHRoZXNlIGFnZXMuIE5vdGUgdGhhdCB0aGUgY2F0ZWdvcnkgaXMgY29kZWQgbGlrZSAiIDIwLTI54oCcLCB3aXRoIGEgc3BhY2UgaW4gZnJvbnQhIFdoYXQgaXMgdGhlIGF2ZXJhZ2UgYW5kIHN0YW5kYXJkIGRldmlhdGlvbiBvZiBzeXN0b2xpYyBibG9vZCBwcmVzc3VyZSBhcyBzYXZlZCBpbiB0aGUgYEJQU3lzQXZlYCB2YXJpYWJsZT8gU2F2ZSBpdCB0byBhIHZhcmlhYmxlIGNhbGxlZCBgcmVmYC4KCkhpbnQ6IFVzZSBgZmlsdGVyYCBhbmQgYHN1bW1hcml6ZWAgYW5kIHVzZSB0aGUgYG5hLnJtID0gVFJVRWAgYXJndW1lbnQgd2hlbiBjb21wdXRpbmcgdGhlIGF2ZXJhZ2UgYW5kIHN0YW5kYXJkIGRldmlhdGlvbi4gWW91IGNhbiBhbHNvIGZpbHRlciB0aGUgTkEgdmFsdWVzIHVzaW5nIGBmaWx0ZXJgLgpgYGB7ciBwYWdlZC5wcmludD1GQUxTRX0KcmVmIDwtIE5IQU5FUyAlPiUKICBmaWx0ZXIoR2VuZGVyID09ICJmZW1hbGUiLCBBZ2VEZWNhZGUgPT0gIiAyMC0yOSIpICU+JQogIHN1bW1hcml6ZShhdmVyYWdlID0gbWVhbihCUFN5c0F2ZSwgbmEucm0gPSBUUlVFKSwgc3RhbmRhcmRfZGV2aWF0aW9uID0gc2QoQlBTeXNBdmUsIG5hLnJtID0gVFJVRSkpCnJlZgpgYGAKCgoyLiBVc2luZyBhIHBpcGUsIGFzc2lnbiB0aGUgYXZlcmFnZSB0byBhIG51bWVyaWMgdmFyaWFibGUgYHJlZl9hdmdgLiBIaW50OiBVc2UgdGhlIGNvZGUgc2ltaWxhciB0byBhYm92ZSBhbmQgdGhlbiBgcHVsbGAuCmBgYHtyfQpyZWZfYXZnICA8LSByZWYgJT4lIHB1bGwoYXZlcmFnZSkKcmVmX2F2ZwpgYGAKCjMuIE5vdyByZXBvcnQgdGhlIG1pbiBhbmQgbWF4IHZhbHVlcyBmb3IgdGhlIHNhbWUgZ3JvdXAuCmBgYHtyIHBhZ2VkLnByaW50PUZBTFNFfQpOSEFORVMgJT4lCiAgZmlsdGVyKEdlbmRlciA9PSAnZmVtYWxlJywgQWdlRGVjYWRlID09ICcgMjAtMjknKSAlPiUKICBzdW1tYXJpemUobWluaW11bSA9IG1pbihCUFN5c0F2ZSwgbmEucm0gPSBUUlVFKSwgbWF4aW11bSA9IG1heChCUFN5c0F2ZSwgbmEucm0gPSBUUlVFKSkKYGBgCgo0LiBDb21wdXRlIHRoZSBhdmVyYWdlIGFuZCBzdGFuZGFyZCBkZXZpYXRpb24gZm9yIGZlbWFsZXMsIGJ1dCBmb3IgZWFjaCBhZ2UgZ3JvdXAgc2VwYXJhdGVseSByYXRoZXIgdGhhbiBhIHNlbGVjdGVkIGRlY2FkZSBhcyBpbiBxdWVzdGlvbiAxLiBOb3RlIHRoYXQgdGhlIGFnZSBncm91cHMgYXJlIGRlZmluZWQgYnkgYEFnZURlY2FkZWAuIEhpbnQ6IHJhdGhlciB0aGFuIGZpbHRlcmluZyBieSBhZ2UgYW5kIGdlbmRlciwgZmlsdGVyIGJ5IGBHZW5kZXJgIGFuZCB0aGVuIHVzZSBgZ3JvdXBfYnlgLgpgYGB7ciBwYWdlZC5wcmludD1GQUxTRX0KbGlicmFyeShmb3JjYXRzKQpOSEFORVMkQWdlRGVjYWRlIDwtIGZjdF9leHBsaWNpdF9uYShOSEFORVMkQWdlRGVjYWRlLCBuYV9sZXZlbCA9ICJNaXNzaW5nRGF0YSIpCk5IQU5FUyAlPiUKICBmaWx0ZXIoR2VuZGVyID09ICdmZW1hbGUnKSAlPiUKICBncm91cF9ieShBZ2VEZWNhZGUpICU+JQogIHN1bW1hcml6ZShhdmVyYWdlID0gbWVhbihCUFN5c0F2ZSwgbmEucm0gPSBUUlVFKSwgc3RhbmRhcmRfZGV2aWF0aW9uID0gc2QoQlBTeXNBdmUsIG5hLnJtID0gVFJVRSkpCmBgYAoKNS4gUmVwZWF0IGV4ZXJjaXNlIDQgZm9yIG1hbGVzLgpgYGB7ciBwYWdlZC5wcmludD1GQUxTRX0KTkhBTkVTJEFnZURlY2FkZSA8LSBmY3RfZXhwbGljaXRfbmEoTkhBTkVTJEFnZURlY2FkZSwgbmFfbGV2ZWwgPSAiTWlzc2luZ0RhdGEiKQpOSEFORVMgJT4lCiAgZmlsdGVyKEdlbmRlciA9PSAnbWFsZScpICU+JQogIGdyb3VwX2J5KEFnZURlY2FkZSkgJT4lCiAgc3VtbWFyaXplKGF2ZXJhZ2UgPSBtZWFuKEJQU3lzQXZlLCBuYS5ybSA9IFRSVUUpLCBzdGFuZGFyZF9kZXZpYXRpb24gPSBzZChCUFN5c0F2ZSwgbmEucm0gPSBUUlVFKSkKYGBgCgo2LiBXZSBjYW4gYWN0dWFsbHkgY29tYmluZSBib3RoIHN1bW1hcmllcyBmb3IgZXhlcmNpc2VzIDQgYW5kIDUgaW50byBvbmUgbGluZSBvZiBjb2RlLiBUaGlzIGlzIGJlY2F1c2UgYGdyb3VwX2J5YCBwZXJtaXRzIHVzIHRvIGdyb3VwIGJ5IG1vcmUgdGhhbiBvbmUgdmFyaWFibGUuIE9idGFpbiBvbmUgYmlnIHN1bW1hcnkgdGFibGUgdXNpbmcgYGdyb3VwX2J5KEFnZURlY2FkZSwgR2VuZGVyKWAuCmBgYHtyIHBhZ2VkLnByaW50PUZBTFNFfQpOSEFORVMkQWdlRGVjYWRlIDwtIGZjdF9leHBsaWNpdF9uYShOSEFORVMkQWdlRGVjYWRlLCBuYV9sZXZlbCA9ICJNaXNzaW5nRGF0YSIpCk5IQU5FUyAlPiUKICBncm91cF9ieShBZ2VEZWNhZGUsIEdlbmRlcikgJT4lCiAgc3VtbWFyaXplKGF2ZXJhZ2UgPSBtZWFuKEJQU3lzQXZlLCBuYS5ybSA9IFRSVUUpLCBzdGFuZGFyZF9kZXZpYXRpb24gPSBzZChCUFN5c0F2ZSwgbmEucm0gPSBUUlVFKSkKYGBgCgo3LiBGb3IgbWFsZXMgYmV0d2VlbiB0aGUgYWdlcyBvZiA0MC00OSwgY29tcGFyZSBzeXN0b2xpYyBibG9vZCBwcmVzc3VyZSBhY3Jvc3MgcmFjZSBhcyByZXBvcnRlZCBpbiB0aGUgYFJhY2UxYCB2YXJpYWJsZS4gT3JkZXIgdGhlIHJlc3VsdGluZyB0YWJsZSBmcm9tIGxvd2VzdCB0byBoaWdoZXN0IGF2ZXJhZ2Ugc3lzdG9saWMgYmxvb2QgcHJlc3N1cmUuCmBgYHtyIHBhZ2VkLnByaW50PUZBTFNFfQpOSEFORVMgJT4lCiAgZmlsdGVyKEdlbmRlciA9PSAnbWFsZScsIEFnZURlY2FkZSA9PSAnIDQwLTQ5JykgJT4lCiAgZ3JvdXBfYnkoUmFjZTEpICU+JQogIHN1bW1hcml6ZShhdmVyYWdlID0gbWVhbihCUFN5c0F2ZSwgbmEucm0gPSBUUlVFKSkgJT4lCiAgYXJyYW5nZShhdmVyYWdlKQpgYGAKCiMjIDUuMTAgVGliYmxlcwoKVGlkeSBkYXRhIG11c3QgYmUgc3RvcmVkIGluIGRhdGEgZnJhbWVzLiBXZSBpbnRyb2R1Y2VkIHRoZSBkYXRhIGZyYW1lIGluIFNlY3Rpb24gMy41IGFuZCBoYXZlIGJlZW4gdXNpbmcgdGhlIGBtdXJkZXJzYCBkYXRhIGZyYW1lIHRocm91Z2hvdXQgdGhlIGJvb2s6CmBgYHtyfQpkYXRhKG11cmRlcnMpCmNsYXNzKG11cmRlcnMpCmBgYAoKSW4gU2VjdGlvbiA1LjcuMyB3ZSBpbnRyb2R1Y2VkIHRoZSBgZ3JvdXBfYnlgIGZ1bmN0aW9uLCB3aGljaCBwZXJtaXRzIHN0cmF0aWZ5aW5nIGRhdGEgYmVmb3JlIGNvbXB1dGluZyBzdW1tYXJ5IHN0YXRpc3RpY3MuIEJ1dCB3aGVyZSBpcyB0aGUgZ3JvdXAgaW5mb3JtYXRpb24gc3RvcmVkIGluIHRoZSBkYXRhIGZyYW1lPwpgYGB7ciBwYWdlZC5wcmludD1GQUxTRX0KbXVyZGVycyAlPiUgZ3JvdXBfYnkocmVnaW9uKSAlPiUgaGVhZCgpCmBgYAoKTm90aWNlIHRoYXQgdGhlcmUgYXJlIG5vIGNvbHVtbnMgd2l0aCB0aGlzIGluZm9ybWF0aW9uLiBCdXQsIGlmIHlvdSBsb29rIGNsb3NlbHkgYXQgdGhlIG91dHB1dCBhYm92ZSwgeW91IHNlZSB0aGUgbGluZSBgQSB0aWJibGU6IDYgeCA1YC4gV2UgY2FuIGxlYXJuIHRoZSBjbGFzcyBvZiB0aGUgcmV0dXJuZWQgb2JqZWN0IHVzaW5nOgpgYGB7cn0KbXVyZGVycyAlPiUgZ3JvdXBfYnkocmVnaW9uKSAlPiUgY2xhc3MoKQpgYGAKClRoZSBgdGJsYCwgcHJvbm91bmNlZCB0aWJibGUsIGlzIGEgc3BlY2lhbCBraW5kIG9mIGRhdGEgZnJhbWUuIFRoZSBmdW5jdGlvbnMgYGdyb3VwX2J5YCBhbmQgYHN1bW1hcml6ZWAgYWx3YXlzIHJldHVybiB0aGlzIHR5cGUgb2YgZGF0YSBmcmFtZS4gVGhlIGBncm91cF9ieWAgZnVuY3Rpb24gcmV0dXJucyBhIHNwZWNpYWwga2luZCBvZiBgdGJsYCwgdGhlIGBncm91cGVkX2RmYC4gV2Ugd2lsbCBzYXkgbW9yZSBhYm91dCB0aGVzZSBsYXRlci4gRm9yIGNvbnNpc3RlbmN5LCB0aGUgX19kcGx5cl9fbWFuaXB1bGF0aW9uIHZlcmJzIChgc2VsZWN0YCwgYGZpbHRlcmAsIGBtdXRhdGVgLCBhbmQgYGFycmFuZ2VgKSBwcmVzZXJ2ZSB0aGUgY2xhc3Mgb2YgdGhlIGlucHV0OiBpZiB0aGV5IHJlY2VpdmUgYSByZWd1bGFyIGRhdGEgZnJhbWUgdGhleSByZXR1cm4gYSByZWd1bGFyIGRhdGEgZnJhbWUsIHdoaWxlIGlmIHRoZXkgcmVjZWl2ZSBhIHRpYmJsZSB0aGV5IHJldHVybiBhIHRpYmJsZS4gQnV0IHRpYmJsZXMgYXJlIHRoZSBwcmVmZXJyZWQgZm9ybWF0IGluIHRoZSB0aWR5dmVyc2UgYW5kIGFzIGEgcmVzdWx0IHRpZHl2ZXJzZSBmdW5jdGlvbnMgdGhhdCBwcm9kdWNlIGEgZGF0YSBmcmFtZSBmcm9tIHNjcmF0Y2ggcmV0dXJuIGEgdGliYmxlLiBGb3IgZXhhbXBsZSwgaW4gQ2hhcHRlciBbNl0oaHR0cHM6Ly9yYWZhbGFiLmdpdGh1Yi5pby9kc2Jvb2svaW1wb3J0aW5nLWRhdGEuaHRtbCNpbXBvcnRpbmctZGF0YSkgd2Ugd2lsbCBzZWUgdGhhdCB0aWR5dmVyc2UgZnVuY3Rpb25zIHVzZWQgdG8gaW1wb3J0IGRhdGEgY3JlYXRlIHRpYmJsZXMuCgpUaWJibGVzIGFyZSB2ZXJ5IHNpbWlsYXIgdG8gZGF0YSBmcmFtZXMuIEluIGZhY3QsIHlvdSBjYW4gdGhpbmsgb2YgdGhlbSBhcyBhIG1vZGVybiB2ZXJzaW9uIG9mIGRhdGEgZnJhbWVzLiBOb25ldGhlbGVzcyB0aGVyZSBhcmUgdGhyZWUgaW1wb3J0YW50IGRpZmZlcmVuY2VzIHdoaWNoIHdlIGRlc2NyaWJlIGluIHRoZSBuZXh0LgoKIyMjIDUuMTAuMSBUaWJibGVzIGRpc3BsYXkgYmV0dGVyCgpUaGUgcHJpbnQgbWV0aG9kIGZvciB0aWJibGVzIGlzIG1vcmUgcmVhZGFibGUgdGhhbiB0aGF0IG9mIGEgZGF0YSBmcmFtZS4gVG8gc2VlIHRoaXMsIGNvbXBhcmUgdGhlIG91dHB1dHMgb2YgdHlwaW5nIGBtdXJkZXJzYCBhbmQgdGhlIG91dHB1dCBvZiBtdXJkZXJzIGlmIHdlIGNvbnZlcnQgaXQgdG8gYSB0aWJibGUuIFdlIGNhbiBkbyB0aGlzIHVzaW5nIGBhc190aWJibGUobXVyZGVycylgLiBJZiB1c2luZyBSU3R1ZGlvLCBvdXRwdXQgZm9yIGEgdGliYmxlIGFkanVzdHMgdG8geW91ciB3aW5kb3cgc2l6ZS4gVG8gc2VlIHRoaXMsIGNoYW5nZSB0aGUgd2lkdGggb2YgeW91ciBSIGNvbnNvbGUgYW5kIG5vdGljZSBob3cgbW9yZS9sZXNzIGNvbHVtbnMgYXJlIHNob3duLgoKIyMjIDUuMTAuMiBTdWJzZXRzIG9mIHRpYmJsZXMgYXJlIHRpYmJsZXMKCklmIHlvdSBzdWJzZXQgdGhlIGNvbHVtbnMgb2YgYSBkYXRhIGZyYW1lLCB5b3UgbWF5IGdldCBiYWNrIGFuIG9iamVjdCB0aGF0IGlzIG5vdCBhIGRhdGEgZnJhbWUsIHN1Y2ggYXMgYSB2ZWN0b3Igb3Igc2NhbGFyLiBGb3IgZXhhbXBsZToKYGBge3J9CmNsYXNzKG11cmRlcnNbLDRdKQpgYGAKCmlzIG5vdCBhIGRhdGEgZnJhbWUuIFdpdGggdGliYmxlcyB0aGlzIGRvZXMgbm90IGhhcHBlbjoKYGBge3J9CmNsYXNzKGFzX3RpYmJsZShtdXJkZXJzKVssNF0pCmBgYAoKVGhpcyBpcyB1c2VmdWwgaW4gdGhlIHRpZHl2ZXJzZSBzaW5jZSBmdW5jdGlvbnMgcmVxdWlyZSBkYXRhIGZyYW1lcyBhcyBpbnB1dC4KCldpdGggdGliYmxlcywgaWYgeW91IHdhbnQgdG8gYWNjZXNzIHRoZSB2ZWN0b3IgdGhhdCBkZWZpbmVzIGEgY29sdW1uLCBhbmQgbm90IGdldCBiYWNrIGEgZGF0YSBmcmFtZSwgeW91IG5lZWQgdG8gdXNlIHRoZSBhY2Nlc3NvciBgJGA6CmBgYHtyfQpjbGFzcyhhc190aWJibGUobXVyZGVycykkcG9wdWxhdGlvbikKYGBgCgpBIHJlbGF0ZWQgZmVhdHVyZSBpcyB0aGF0IHRpYmJsZXMgd2lsbCBnaXZlIHlvdSBhIHdhcm5pbmcgaWYgeW91IHRyeSB0byBhY2Nlc3MgYSBjb2x1bW4gdGhhdCBkb2VzIG5vdCBleGlzdC4gSWYgd2UgYWNjaWRlbnRhbGx5IHdyaXRlIGBQb3B1bGF0aW9uYCBpbnN0ZWFkIG9mIGBwb3B1bGF0aW9uYCB0aGlzOgpgYGB7cn0KbXVyZGVycyRQb3B1bGF0aW9uCmBgYAoKcmV0dXJucyBhIGBOVUxMYCB3aXRoIG5vIHdhcm5pbmcsIHdoaWNoIGNhbiBtYWtlIGl0IGhhcmRlciB0byBkZWJ1Zy4gSW4gY29udHJhc3QsIGlmIHdlIHRyeSB0aGlzIHdpdGggYSB0aWJibGUgd2UgZ2V0IGFuIGluZm9ybWF0aXZlIHdhcm5pbmc6CmBgYHtyIHBhZ2VkLnByaW50PUZBTFNFfQphc190aWJibGUobXVyZGVycykkUG9wdWxhdGlvbgpgYGAKCiMjIyA1LjEwLjMgVGliYmxlcyBjYW4gaGF2ZSBjb21wbGV4IGVudHJpZXMKCldoaWxlIGRhdGEgZnJhbWUgY29sdW1ucyBuZWVkIHRvIGJlIHZlY3RvcnMgb2YgbnVtYmVycywgc3RyaW5ncyBvciBsb2dpY2FsIHZhbHVlcywgdGliYmxlcyBjYW4gaGF2ZSBtb3JlIGNvbXBsZXggb2JqZWN0cywgc3VjaCBhcyBsaXN0cyBvciBmdW5jdGlvbnMuIEFsc28sIHdlIGNhbiBjcmVhdGUgdGliYmxlcyB3aXRoIGZ1bmN0aW9uczoKYGBge3IgcGFnZWQucHJpbnQ9RkFMU0V9CnRpYmJsZShpZCA9IGMoMSwgMiwgMyksIGZ1bmMgPSBjKG1lYW4sIG1lZGlhbiwgc2QpKQpgYGAKCiMjIyA1LjEwLjQgVGliYmxlcyBjYW4gYmUgZ3JvdXBlZAoKVGhlIGZ1bmN0aW9uIGBncm91cF9ieWAgcmV0dXJucyBhIHNwZWNpYWwga2luZCBvZiB0aWJibGU6IGEgZ3JvdXBlZCB0aWJibGUuIFRoaXMgY2xhc3Mgc3RvcmVzIGluZm9ybWF0aW9uIHRoYXQgbGV0cyB5b3Uga25vdyB3aGljaCByb3dzIGFyZSBpbiB3aGljaCBncm91cHMuIFRoZSB0aWR5dmVyc2UgZnVuY3Rpb25zLCBpbiBwYXJ0aWN1bGFyIHRoZSBgc3VtbWFyaXplYCBmdW5jdGlvbiwgYXJlIGF3YXJlIG9mIHRoZSBncm91cCBpbmZvcm1hdGlvbi4KCiMjIyA1LjEwLjUgQ3JlYXRlIGEgdGliYmxlIHVzaW5nIGBkYXRhX2ZyYW1lYCBpbnN0ZWFkIG9mIGBkYXRhLmZyYW1lYAoKSXQgaXMgc29tZXRpbWVzIHVzZWZ1bCBmb3IgdXMgdG8gY3JlYXRlIG91ciBvd24gZGF0YSBmcmFtZXMuIFRvIGNyZWF0ZSBhIGRhdGEgZnJhbWUgaW4gdGhlIHRpYmJsZSBmb3JtYXQsIHlvdSBjYW4gZG8gdGhpcyBieSB1c2luZyB0aGUgYGRhdGFfZnJhbWVgIGZ1bmN0aW9uLgpgYGB7ciBwYWdlZC5wcmludD1GQUxTRX0KZ3JhZGVzIDwtIGRhdGFfZnJhbWUobmFtZXMgPSBjKCJKb2huIiwgIkp1YW4iLCAiSmVhbiIsICJZYW8iKSwgCiAgICAgICAgICAgICAgICAgICAgIGV4YW1fMSA9IGMoOTUsIDgwLCA5MCwgODUpLCAKICAgICAgICAgICAgICAgICAgICAgZXhhbV8yID0gYyg5MCwgODUsIDg1LCA5MCkpCmdyYWRlcwpgYGAKCk5vdGUgdGhhdCBiYXNlIFIgKHdpdGhvdXQgcGFja2FnZXMgbG9hZGVkKSBoYXMgYSBmdW5jdGlvbiB3aXRoIGEgdmVyeSBzaW1pbGFyIG5hbWUsIGBkYXRhLmZyYW1lYCwgdGhhdCBjYW4gYmUgdXNlZCB0byBjcmVhdGUgYSByZWd1bGFyIGRhdGEgZnJhbWUgcmF0aGVyIHRoYW4gYSB0aWJibGUuIE9uZSBvdGhlciBpbXBvcnRhbnQgZGlmZmVyZW5jZSBpcyB0aGF0IGJ5IGRlZmF1bHQgYGRhdGEuZnJhbWVgIGNvZXJjZXMgY2hhcmFjdGVycyBpbnRvIGZhY3RvcnMgd2l0aG91dCBwcm92aWRpbmcgYSB3YXJuaW5nIG9yIG1lc3NhZ2U6CmBgYHtyIHBhZ2VkLnByaW50PUZBTFNFfQpncmFkZXMgPC0gZGF0YS5mcmFtZShuYW1lcyA9IGMoIkpvaG4iLCAiSnVhbiIsICJKZWFuIiwgIllhbyIpLCAKICAgICAgICAgICAgICAgICAgICAgZXhhbV8xID0gYyg5NSwgODAsIDkwLCA4NSksIAogICAgICAgICAgICAgICAgICAgICBleGFtXzIgPSBjKDkwLCA4NSwgODUsIDkwKSkKY2xhc3MoZ3JhZGVzJG5hbWVzKQpgYGAKClRvIGF2b2lkIHRoaXMsIHdlIHVzZSB0aGUgcmF0aGVyIGN1bWJlcnNvbWUgYXJndW1lbnQgYHN0cmluZ3NBc0ZhY3RvcnNgOgpgYGB7cn0KZ3JhZGVzIDwtIGRhdGEuZnJhbWUobmFtZXMgPSBjKCJKb2huIiwgIkp1YW4iLCAiSmVhbiIsICJZYW8iKSwgCiAgICAgICAgICAgICAgICAgICAgIGV4YW1fMSA9IGMoOTUsIDgwLCA5MCwgODUpLCAKICAgICAgICAgICAgICAgICAgICAgZXhhbV8yID0gYyg5MCwgODUsIDg1LCA5MCksCiAgICAgICAgICAgICAgICAgICAgIHN0cmluZ3NBc0ZhY3RvcnMgPSBGQUxTRSkKY2xhc3MoZ3JhZGVzJG5hbWVzKQpgYGAKClRvIGNvbnZlcnQgYSByZWd1bGFyIGRhdGEgZnJhbWUgdG8gYSB0aWJibGUsIHlvdSBjYW4gdXNlIHRoZSBgYXNfdGliYmxlYCBmdW5jdGlvbi4KYGBge3J9CmFzX3RpYmJsZShncmFkZXMpICU+JSBjbGFzcygpCmBgYAoKIyMgNS4xMSBUaGUgZG90IG9wZXJhdG9yCgpPbmUgb2YgdGhlIGFkdmFudGFnZXMgb2YgdXNpbmcgdGhlIHBpcGUgYCU+JWAgaXMgdGhhdCB3ZSBkbyBub3QgaGF2ZSB0byBrZWVwIG5hbWluZyBuZXcgb2JqZWN0cyBhcyB3ZSBtYW5pcHVsYXRlIHRoZSBkYXRhIGZyYW1lLiBBcyBxdWljayByZW1pbmRlciwgaWYgd2Ugd2FudCB0byBjb21wdXRlIHRoZSBtZWRpYW4gbXVyZGVyIHJhdGUgZm9yIHN0YXRlcyBpbiB0aGUgc291dGhlcm4gc3RhdGVzLCBpbnN0ZWFkIG9mIHR5cGluZzoKYGBge3J9CnRhYl8xIDwtIGZpbHRlcihtdXJkZXJzLCByZWdpb24gPT0gIlNvdXRoIikKdGFiXzIgPC0gbXV0YXRlKHRhYl8xLCByYXRlID0gdG90YWwgLyBwb3B1bGF0aW9uICogMTBeNSkKcmF0ZXMgPC0gdGFiXzIkcmF0ZQptZWRpYW4ocmF0ZXMpCmBgYAoKV2UgY2FuIGF2b2lkIGRlZmluaW5nIGFueSBuZXcgaW50ZXJtZWRpYXRlIG9iamVjdHMgYnkgaW5zdGVhZCB0eXBpbmc6CmBgYHtyfQpmaWx0ZXIobXVyZGVycywgcmVnaW9uID09ICJTb3V0aCIpICU+JSAKICBtdXRhdGUocmF0ZSA9IHRvdGFsIC8gcG9wdWxhdGlvbiAqIDEwXjUpICU+JSAKICBzdW1tYXJpemUobWVkaWFuID0gbWVkaWFuKHJhdGUpKSAlPiUKICBwdWxsKG1lZGlhbikKYGBgCgpXZSBjYW4gZG8gdGhpcyBiZWNhdXNlIGVhY2ggb2YgdGhlc2UgZnVuY3Rpb25zIHRha2VzIGEgZGF0YSBmcmFtZSBhcyB0aGUgZmlyc3QgYXJndW1lbnQuIEJ1dCB3aGF0IGlmIHdlIHdhbnQgdG8gYWNjZXNzIGEgY29tcG9uZW50IG9mIHRoZSBkYXRhIGZyYW1lLiBGb3IgZXhhbXBsZSwgd2hhdCBpZiB0aGUgYHB1bGxgIGZ1bmN0aW9uIHdhcyBub3QgYXZhaWxhYmxlIGFuZCB3ZSB3YW50ZWQgdG8gYWNjZXNzIGB0YWJfMiRyYXRlYD8gV2hhdCBkYXRhIGZyYW1lIG5hbWUgd291bGQgd2UgdXNlPyBUaGUgYW5zd2VyIGlzIHRoZSBkb3Qgb3BlcmF0b3IuCgpGb3IgZXhhbXBsZSB0byBhY2Nlc3MgdGhlIHJhdGUgdmVjdG9yIHdpdGhvdXQgdGhlIGBwdWxsYCBmdW5jdGlvbiB3ZSBjb3VsZCB1c2UKYGBge3J9CnJhdGVzIDwtZmlsdGVyKG11cmRlcnMsIHJlZ2lvbiA9PSAiU291dGgiKSAlPiUgCiAgbXV0YXRlKHJhdGUgPSB0b3RhbCAvIHBvcHVsYXRpb24gKiAxMF41KSAlPiUgCiAgLiRyYXRlCm1lZGlhbihyYXRlcykKYGBgCgpJbiB0aGUgbmV4dCBzZWN0aW9uLCB3ZSB3aWxsIHNlZSBvdGhlciBpbnN0YW5jZXMgaW4gd2hpY2ggdXNpbmcgdGhlIGAuYCBpcyB1c2VmdWwuCgojIyA1LjEyIGBkb2AKClRoZSB0aWR5dmVyc2UgZnVuY3Rpb25zIGtub3cgaG93IHRvIGludGVycHJldCBncm91cGVkIHRpYmJsZXMuIEZ1cnRoZXJtb3JlLCB0byBmYWNpbGl0YXRlIHN0cmluZ2luZyBjb21tYW5kcyB0aHJvdWdoIHRoZSBwaXBlIGAlPiVgLCB0aWR5dmVyc2UgZnVuY3Rpb25zIGNvbnNpc3RlbnRseSByZXR1cm4gZGF0YSBmcmFtZXMsIHNpbmNlIHRoaXMgYXNzdXJlcyB0aGF0IHRoZSBvdXRwdXQgb2YgYSBmdW5jdGlvbiBpcyBhY2NlcHRlZCBhcyB0aGUgaW5wdXQgb2YgYW5vdGhlci4gQnV0IG1vc3QgUiBmdW5jdGlvbnMgZG8gbm90IHJlY29nbml6ZSBncm91cGVkIHRpYmJsZXMgbm9yIGRvIHRoZXkgcmV0dXJuIGRhdGEgZnJhbWVzLiBUaGUgYHF1YW50aWxlYCBmdW5jdGlvbiBpcyBhbiBleGFtcGxlIHdlIGRlc2NyaWJlZCBpbiBTZWN0aW9uIFs1LjcuMV0oaHR0cHM6Ly9yYWZhbGFiLmdpdGh1Yi5pby9kc2Jvb2svdGlkeXZlcnNlLmh0bWwjc3VtbWFyaXplKS4gVGhlIGBkb2AgZnVuY3Rpb25zIHNlcnZlcyBhcyBhIGJyaWRnZSBiZXR3ZWVuIFIgZnVuY3Rpb25zIHN1Y2ggYXMgYHF1YW50aWxlYCBhbmQgdGhlIHRpZHl2ZXJzZS4gVGhlIGBkb2AgZnVuY3Rpb24gdW5kZXJzdGFuZHMgZ3JvdXBlZCB0aWJibGVzIGFuZCBhbHdheXMgcmV0dXJucyBhIGRhdGEgZnJhbWUuCgpJbiBTZWN0aW9uIFs1LjcuMV0oaHR0cHM6Ly9yYWZhbGFiLmdpdGh1Yi5pby9kc2Jvb2svdGlkeXZlcnNlLmh0bWwjc3VtbWFyaXplKSwgd2Ugbm90ZWQgdGhhdCBpZiB3ZSBhdHRlbXB0IHRvIHVzZSBgcXVhbnRpbGVgIHRvIG9idGFpbiB0aGUgbWluLCBtZWRpYW4gYW5kIG1heCBpbiBvbmUgY2FsbCwgd2Ugd2lsbCByZWNlaXZlIGFuIGVycm9yOiBgRXJyb3I6IGV4cGVjdGluZyByZXN1bHQgb2YgbGVuZ3RoIG9uZSwgZ290IDogMmAuCmBgYHtyfQpkYXRhKGhlaWdodHMpCmhlaWdodHMgJT4lIAogIGZpbHRlcihzZXggPT0gIkZlbWFsZSIpICU+JQogIHN1bW1hcml6ZShyYW5nZSA9IHF1YW50aWxlKGhlaWdodCwgYygwLCAwLjUsIDEpKSkKYGBgCgpXZSBjYW4gdXNlIHRoZSBgZG9gIGZ1bmN0aW9uIGZpeCB0aGlzLgoKRmlyc3Qgd2UgaGF2ZSB0byB3cml0ZSBhIGZ1bmN0aW9uIHRoYXQgZml0cyBpbnRvIHRoZSB0aWR5dmVyc2UgYXBwcm9hY2g6IHRoYXQgaXMsIGl0IHJlY2VpdmVzIGEgZGF0YSBmcmFtZSBhbmQgcmV0dXJucyBhIGRhdGEgZnJhbWUuCmBgYHtyfQpteV9zdW1tYXJ5IDwtIGZ1bmN0aW9uKGRhdCl7CiAgeCA8LSBxdWFudGlsZShkYXQkaGVpZ2h0LCBjKDAsIDAuNSwgMSkpCiAgZGF0YV9mcmFtZShtaW4gPSB4WzFdLCBtZWRpYW4gPSB4WzJdLCBtYXggPSB4WzNdKQp9CmBgYAoKV2UgY2FuIG5vdyBhcHBseSB0aGUgZnVuY3Rpb24gdG8gdGhlIGhlaWdodHMgZGF0YXNldCB0byBvYnRhaW4gdGhlIHN1bW1hcmllczoKYGBge3IgcGFnZWQucHJpbnQ9RkFMU0V9CmhlaWdodHMgJT4lIAogIGdyb3VwX2J5KHNleCkgJT4lIAogIG15X3N1bW1hcnkKYGBgCgpCdXQgdGhpcyBpcyBub3Qgd2hhdCB3ZSB3YW50LiBXZSB3YW50IGEgc3VtbWFyeSBmb3IgZWFjaCBzZXggYW5kIHRoZSBjb2RlIHJldHVybmVkIGp1c3Qgb25lIHN1bW1hcnkuIFRoaXMgaXMgYmVjYXVzZSBgbXlfc3VtbWFyeWAgaXMgbm90IHBhcnQgb2YgdGhlIHRpZHl2ZXJzZSBhbmQgZG9lcyBub3Qga25vdyBob3cgdG8gaGFuZGxlZCBncm91cGVkIHRpYmJsZXMuIGBkb2AgbWFrZXMgdGhpcyBjb25uZWN0aW9uOgpgYGB7ciBwYWdlZC5wcmludD1GQUxTRX0KaGVpZ2h0cyAlPiUgCiAgZ3JvdXBfYnkoc2V4KSAlPiUgCiAgZG8obXlfc3VtbWFyeSguKSkKYGBgCgpOb3RlIHRoYXQgaGVyZSB3ZSBuZWVkIHRvIHVzZSB0aGUgZG90IG9wZXJhdG9yLiBUaGUgdGliYmxlIGNyZWF0ZWQgYnkgYGdyb3VwX2J5YCBpcyBwaXBlZCB0byBgZG9gLiBXaXRoaW4gdGhlIGNhbGwgdG8gYGRvYCwgdGhlIG5hbWUgb2YgdGhpcyB0aWJibGUgaXMgYC5gIGFuZCB3ZSB3YW50IHRvIHNlbmQgaXQgdG8gYG15X3N1bW1hcnlgLiBJZiB5b3UgZG8gbm90IHVzZSB0aGUgZG90LCB0aGVuIGBteV9zdW1tYXJ5YCBoYXMgX25vIGFyZ3VtZW50XyBhbmQgcmV0dXJucyBhbiBlcnJvciB0ZWxsaW5nIHVzIHRoYXQgYGFyZ3VtZW50ICJkYXQiYCBpcyBtaXNzaW5nLiBZb3UgY2FuIHNlZSB0aGUgZXJyb3IgYnkgdHlwaW5nOgpgYGB7cn0KaGVpZ2h0cyAlPiUgCiAgZ3JvdXBfYnkoc2V4KSAlPiUgCiAgZG8obXlfc3VtbWFyeSgpKQpgYGAKCklmIHlvdSBkbyBub3QgdXNlIHRoZSBwYXJlbnRoZXNpcywgdGhlbiB0aGUgZnVuY3Rpb24gaXMgbm90IGV4ZWN1dGVkIGFuZCBpbnN0ZWFkIGRvIHRyaWVzIHRvIHJldHVybiB0aGUgZnVuY3Rpb24uIFRoaXMgZ2l2ZXMgYW4gZXJyb3IgYmVjYXVzZSBkbyBtdXN0IGFsd2F5cyByZXR1cm4gYSBkYXRhIGZyYW1lLiBZb3UgY2FuIHNlZSB0aGUgZXJyb3IgYnkgdHlwaW5nOgpgYGB7cn0KaGVpZ2h0cyAlPiUgCiAgZ3JvdXBfYnkoc2V4KSAlPiUgCiAgZG8obXlfc3VtbWFyeSkKYGBgCgojIyA1LjEzIFRoZSBwdXJyciBwYWNrYWdlCgpJbiBTZWN0aW9uIFs0LjVdKGh0dHBzOi8vcmFmYWxhYi5naXRodWIuaW8vZHNib29rL3Byb2dyYW1taW5nLWJhc2ljcy5odG1sI3ZlY3Rvcml6YXRpb24pIHdlIGxlYXJuZWQgYWJvdXQgdGhlIGBzYXBwbHlgIGZ1bmN0aW9uLCB3aGljaCBwZXJtaXR0ZWQgdXMgdG8gYXBwbHkgdGhlIHNhbWUgZnVuY3Rpb24gdG8gZWFjaCBlbGVtZW50IG9mIGEgdmVjdG9yLiBXZSBjb25zdHJ1Y3RlZCB0aGlzIGZ1bmN0aW9uOgpgYGB7cn0KY29tcHV0ZV9zX24gPC0gZnVuY3Rpb24obil7CiAgeCA8LSAxOm4KICBzdW0oeCkKfQpgYGAKCmFuZCB1c2VkIGBzYXBwbHlgIHRvIGNvbXB1dGUgdGhlIHN1bSBvZiB0aGUgZmlyc3QgYG5gIGludGVnZXJzIGZvciBzZXZlcmFsIHZhbHVlcyBvZiBgbmAgbGlrZSB0aGlzOgpgYGB7cn0KbiA8LSAxOjI1CnNfbiA8LSBzYXBwbHkobiwgY29tcHV0ZV9zX24pCmBgYAoKVGhpcyB0eXBlIG9mIG9wZXJhdGlvbiwgYXBwbHlpbmcgdGhlIHNhbWUgZnVuY3Rpb24gb3IgcHJvY2VkdXJlIHRvIGVsZW1lbnRzIG9mIGFuIG9iamVjdCwgaXMgcXVpdGUgY29tbW9uIGluIGRhdGEgYW5hbHlzaXMuIFRoZSAqKnB1cnJyKiogcGFja2FnZSBpbmNsdWRlcyBmdW5jdGlvbnMgc2ltaWxhciB0byBgc2FwcGx5YCBidXQgdGhhdCBiZXR0ZXIgaW50ZXJhY3Qgd2l0aCBvdGhlciB0aWR5dmVyc2UgZnVuY3Rpb25zLiBUaGUgbWFpbiBhZHZhbnRhZ2UgaXMgdGhhdCB3ZSBjYW4gYmV0dGVyIGNvbnRyb2wgdGhlIG91dHB1dCB0eXBlIG9mIGZ1bmN0aW9ucy4gSW4gY29udHJhc3QsIGBzYXBwbHlgIGNhbiByZXR1cm4gc2V2ZXJhbCBkaWZmZXJlbnQgb2JqZWN0IHR5cGVzOyBmb3IgZXhhbXBsZSwgd2UgbWlnaHQgZXhwZWN0IGEgbnVtZXJpYyByZXN1bHQgZnJvbSBhIGxpbmUgb2YgY29kZSwgYnV0IGBzYXBwbHlgIG1pZ2h0IGNvbnZlcnQgb3VyIHJlc3VsdCB0byBjaGFyYWN0ZXIgdW5kZXIgc29tZSBjaXJjdW1zdGFuY2VzLiAqKnB1cnJyKiogZnVuY3Rpb25zIHdpbGwgbmV2ZXIgZG8gdGhpczogdGhleSB3aWxsIHJldHVybiBvYmplY3RzIG9mIGEgc3BlY2lmaWVkIHR5cGUgb3IgcmV0dXJuIGFuIGVycm9yIGlmIHRoaXMgaXMgbm90IHBvc3NpYmxlLgoKVGhlIGZpcnN0ICoqcHVycnIqKiBmdW5jdGlvbiB3ZSB3aWxsIGxlYXJuIGlzIGBtYXBgLCB3aGljaCB3b3JrcyB2ZXJ5IHNpbWlsYXIgdG8gYHNhcHBseWAgYnV0IGFsd2F5cywgd2l0aG91dCBleGNlcHRpb24sIHJldHVybnMgYSBsaXN0OgpgYGB7cn0KbGlicmFyeShwdXJycikKc19uIDwtIG1hcChuLCBjb21wdXRlX3NfbikKY2xhc3Moc19uKQpgYGAKCklmIHdlIHdhbnQgYSBudW1lcmljIHZlY3Rvciwgd2UgY2FuIGluc3RlYWQgdXNlIGBtYXBfZGJsYCB3aGljaCBhbHdheXMgcmV0dXJucyBhIHZlY3RvciBvZiBudW1lcmljIHZhbHVlcy4KYGBge3J9CnNfbiA8LSBtYXBfZGJsKG4sIGNvbXB1dGVfc19uKQpjbGFzcyhzX24pCmBgYAoKVGhpcyBwcm9kdWNlcyB0aGUgc2FtZSByZXN1bHRzIGFzIHRoZSBgc2FwcGx5YCBjYWxsIHNob3duIGFib3ZlLgoKQSBwYXJ0aWN1bGFybHkgdXNlZnVsICoqcHVycnIqKiBmdW5jdGlvbiBmb3IgaW50ZXJhY3Rpbmcgd2l0aCB0aGUgcmVzdCBvZiB0aGUgdGlkeXZlcnNlIGlzIGBtYXBfZGZgLCB3aGljaCBhbHdheXMgcmV0dXJucyBhIHRpYmJsZSBkYXRhIGZyYW1lLiBIb3dldmVyLCB0aGUgZnVuY3Rpb24gYmVpbmcgY2FsbGVkIG5lZWRzIHRvIHJldHVybiBhIHZlY3RvciBhIG9yIGxpc3Qgd2l0aCBuYW1lcy4gRm9yIHRoaXMgcmVhc29uLCB0aGUgZm9sbG93aW5nIGNvZGUgd291bGQgcmVzdWx0IGluIGEgYEFyZ3VtZW50IDEgbXVzdCBoYXZlIG5hbWVzYCBlcnJvcjoKYGBge3J9CnNfbiA8LSBtYXBfZGYobiwgY29tcHV0ZV9zX24pCmBgYAoKV2UgbmVlZCB0byBjaGFuZ2UgdGhlIGZ1bmN0aW9uIHRvIG1ha2UgdGhpcyB3b3JrOgpgYGB7ciBwYWdlZC5wcmludD1GQUxTRX0KY29tcHV0ZV9zX24gPC0gZnVuY3Rpb24obil7CiAgeCA8LSAxOm4KICBkYXRhX2ZyYW1lKHN1bSA9IHN1bSh4KSkKfQpzX24gPC0gbWFwX2RmKG4sIGNvbXB1dGVfc19uKQpoZWFkKHNfbikKYGBgCgpUaGUgKipwdXJycioqIHBhY2thZ2UgcHJvdmlkZXMgbXVjaCBtb3JlIGZ1bmN0aW9uYWxpdHkgbm90IGNvdmVyZWQgaGVyZS4gRm9yIG1vcmUgZGV0YWlscyB5b3UgY2FuIGNvbnN1bHQgW3RoaXMgb25saW5lIHJlc291cmNlXShodHRwczovL2plbm55YmMuZ2l0aHViLmlvL3B1cnJyLXR1dG9yaWFsLykuCgojIyA1LjE0IFRpZHl2ZXJzZSBjb25kaXRpb25hbHMKCkEgdHlwaWNhbCBkYXRhIGFuYWx5c2lzIHdpbGwgb2Z0ZW4gaW52b2x2ZSBvbmUgb3IgbW9yZSBjb25kaXRpb25hbCBvcGVyYXRpb24uIEluIFNlY3Rpb24gWzQuMV0oaHR0cHM6Ly9yYWZhbGFiLmdpdGh1Yi5pby9kc2Jvb2svcHJvZ3JhbW1pbmctYmFzaWNzLmh0bWwjY29uZGl0aW9uYWxzKSB3ZSBkZXNjcmliZWQgdGhlIGBpZmVsc2VgIGZ1bmN0aW9uLCB3aGljaCB3ZSB3aWxsIHVzZSBleHRlbnNpdmVseSBpbiB0aGlzIGJvb2suIEluIHRoaXMgc2VjdGlvbiB3ZSBwcmVzZW50IHR3byAqKmRwbHlyKiogZnVuY3Rpb25zIHRoYXQgcHJvdmlkZSBmdXJ0aGVyIGZ1bmN0aW9uYWxpdHkgZm9yIHBlcmZvcm1pbmcgY29uZGl0aW9uYWwgb3BlcmF0aW9ucy4KCiMjIyA1LjE0LjEgYGNhc2Vfd2hlbmAKClRoZSBgY2FzZV93aGVuYCBmdW5jdGlvbiBpcyB1c2VmdWwgZm9yIHZlY3Rvcml6aW5nIGNvbmRpdGlvbmFsIHN0YXRlbWVudHMuIEl0IGlzIHNpbWlsYXIgdG8gYGlmZWxzZWAgYnV0IGNhbiBvdXRwdXQgYW55IG51bWJlciBvZiB2YWx1ZXMsIGFzIG9wcG9zZWQgdG8ganVzdCBgVFJVRWAgb3IgYEZBTFNFYC4gSGVyZSBpcyBhbiBleGFtcGxlIHNwbGl0dGluZyBudW1iZXJzIGludG8gbmVnYXRpdmUsIHBvc2l0aXZlcyBhbmQgMDoKYGBge3J9CnggPC0gYygtMiwgLTEsIDAsIDEsIDIpCmNhc2Vfd2hlbih4IDwgMCB+ICJOZWdhdGl2ZSIsIHggPiAwIH4gIlBvc2l0aXZlIiwgVFJVRSB+ICJaZXJvIikKYGBgCgpBIGNvbW1vbiB1c2UgZm9yIHRoaXMgZnVuY3Rpb24gaXMgdG8gZGVmaW5lIGNhdGVnb3JpY2FsIHZhcmlhYmxlcyBiYXNlZCBvbiBleGlzdGluZyB2YXJpYWJsZXMuIEZvciBleGFtcGxlLCBzdXBwb3NlIHdlIHdlIHdhbnQgY29tcGFyZSB0aGUgbXVyZGVyIHJhdGVzIGluIGluIHRocmVlIGdyb3VwcyBvZiBzdGF0ZXM6IF9OZXcgRW5nbGFuZF8sIF9XZXN0IENvYXN0XywgX1NvdXRoXywgYW5kIF9vdGhlcl8uIEZvciBlYWNoIHN0YXRlLCB3ZSBuZWVkIHRvIGFzayBpZiBpdCBpcyBpbiBOZXcgRW5nbGFuZCwgaWYgaXQgaXMgbm90IHdlIGFzayBpZiBpdCBpcyBpbiB0aGUgV2VzdCBDb2FzdCwgaWYgbm90IHdlIGFzayBpZiBpdCBpcyBpbiB0aGUgU291dGggYW5kIGlmIG5vdCB3ZSBhc3NpZ24gX290aGVyXy4gSGVyZSBpcyBob3cgd2UgdXNlIGBjYXNlX3doZW5gIHRvIGRvIHRoaXM6CmBgYHtyIHBhZ2VkLnByaW50PUZBTFNFfQptdXJkZXJzICU+JSAKICBtdXRhdGUoZ3JvdXAgPSBjYXNlX3doZW4oCiAgICBhYmIgJWluJSBjKCJNRSIsICJOSCIsICJWVCIsICJNQSIsICJSSSIsICJDVCIpIH4gIk5ldyBFbmdsYW5kIiwKICAgIGFiYiAlaW4lIGMoIldBIiwgIk9SIiwgIkNBIikgfiAiV2VzdCBDb2FzdCIsCiAgICByZWdpb24gPT0gIlNvdXRoIiB+ICJTb3V0aCIsCiAgICBUUlVFIH4gIm90aGVyIikpICU+JQogIGdyb3VwX2J5KGdyb3VwKSAlPiUKICBzdW1tYXJpemUocmF0ZSA9IHN1bSh0b3RhbCkgLyBzdW0ocG9wdWxhdGlvbikgKiAxMF41KSAlPiUKICBhcnJhbmdlKHJhdGUpCmBgYAoKIyMjIDUuMTQuMiBgYmV0d2VlbmAKCkEgY29tbW9uIG9wZXJhdGlvbiBpbiBkYXRhIGFuYWx5c2lzIGlzIHRvIGRldGVybWluZSBpZiBhIHZhbHVlIGZhbGxzIGluc2lkZSBhbiBpbnRlcnZhbC4gV2UgY2FuIGNoZWNrIHRoaXMgdXNpbmcgY29uZGl0aW9uYWxzLiBGb3IgZXhhbXBsZSB0byBjaGVjayBpZiB0aGUgZWxlbWVudHMgb2YgYSB2ZWN0b3IgYHhgIGFyZSBiZXR3ZWVuIGBhYCBhbmQgYGJgIHdlIGNhbiB0eXBlCmBgYHtyfQp4ID49IGEgJiB4IDw9IGIKYGBgCgpIb3dldmVyLCB0aGlzIGNhbiBiZWNvbWUgY3VtYmVyc29tZSwgZXNwZWNpYWxseSB3aXRoaW4gdGhlIHRpZHl2ZXJzZSBhcHByb2FjaC4gVGhlIGBiZXR3ZWVuYCBmdW5jdGlvbiBwZXJmb3JtcyB0aGUgc2FtZSBvcGVyYXRpb24uCmBgYHtyfQpiZXR3ZWVuKHgsIGEsIGIpCmBgYAoKIyA1LjE1IEV4ZXJjaXNlcwoKMS4gTG9hZCB0aGUgYG11cmRlcnNgIGRhdGFzZXQuIFdoaWNoIG9mIHRoZSBmb2xsb3dpbmcgaXMgdHJ1ZT8KCiAgQS4gYG11cmRlcnNgIGlzIGluIHRpZHkgZm9ybWF0IGFuZCBpcyBzdG9yZWQgaW4gYSB0aWJibGUuICAKICBCLiBgbXVyZGVyc2AgaXMgaW4gdGlkeSBmb3JtYXQgYW5kIGlzIHN0b3JlZCBpbiBhIGRhdGEgZnJhbWUuCiAgQy4gYG11cmRlcnNgIGlzIG5vdCBpbiB0aWR5IGZvcm1hdCBhbmQgaXMgc3RvcmVkIGluIGEgdGliYmxlLgogIEQuIGBtdXJkZXJzYCBpcyBub3QgaW4gdGlkeSBmb3JtYXQgYW5kIGlzIHN0b3JlZCBpbiBhIGRhdGEgZnJhbWUuCgpgYW5zd2VyOiBCYAoKMi4gVXNlIGBhc190aWJibGVgIHRvIGNvdmVydCB0aGUgYG11cmRlcnNgIGRhdGEgdGFibGUgaW50byBhIHRpYmJsZSBhbmQgc2F2ZSBpdCBpbiBhbiBvYmplY3QgY2FsbGVkIGBtdXJkZXJzX3RpYmJsZWAuCmBgYHtyIHBhZ2VkLnByaW50PUZBTFNFfQptdXJkZXJzX3RpYmJsZSA8LSBhc190aWJibGUobXVyZGVycykKYGBgCgozLiBVc2UgdGhlIGBncm91cF9ieWAgZnVuY3Rpb24gdG8gY29udmVydCBtdXJkZXJzIGludG8gYSB0aWJibGUgdGhhdCBpcyBncm91cGVkIGJ5IHJlZ2lvbi4KYGBge3IgcGFnZWQucHJpbnQ9RkFMU0V9Cm11cmRlcnNfdGliYmxlICU+JSBncm91cF9ieShyZWdpb24pCmBgYAoKNC4gV3JpdGUgdGlkeXZlcnNlIGNvZGUgdGhhdCBpcyBlcXVpdmFsZW50IHRvIHRoaXMgY29kZTogYGV4cChtZWFuKGxvZyhtdXJkZXJzJHBvcHVsYXRpb24pKSlgLiBXcml0ZSBpdCB1c2luZyB0aGUgcGlwZSBzbyB0aGF0IGVhY2ggZnVuY3Rpb24gaXMgY2FsbGVkIHdpdGhvdXQgYXJndW1lbnRzLiBVc2UgdGhlIGRvdCBvcGVyYXRvciB0byBhY2Nlc3MgdGhlIHBvcHVsYXRpb24uIEhpbnQ6IFRoZSBjb2RlIHNob3VsZCBzdGFydCB3aXRoIGBtdXJkZXJzICU+JWAuCmBgYHtyfQptdXJkZXJzICU+JQogIC4kcG9wdWxhdGlvbiAlPiUKICBsb2coKSAlPiUKICBtZWFuKCkgJT4lCiAgZXhwKCkKYGBgCgo1LiBVc2UgdGhlIGBtYXBfZGZgIHRvIGNyZWF0ZSBhIGRhdGEgZnJhbWUgd2l0aCB0aHJlZSBjb2x1bW5zIG5hbWVkIGBuYCwgYHNfbmAsIGFuZCBgc19uXzJgLiBUaGUgZmlyc3QgY29sdW1uIHNob3VsZCBjb250YWluIHRoZSBudW1iZXJzIDEgdGhyb3VnaCAxMDAuIFRoZSBzZWNvbmQgYW5kIHRoaXJkIGNvbHVtbnMgc2hvdWxkIGVhY2ggY29udGFpbiB0aGUgc3VtIG9mIDEgdGhyb3VnaCAkbiQgd2l0aCAkbiQgdGhlIHJvdyBudW1iZXIuCmBgYHtyIHBhZ2VkLnByaW50PUZBTFNFfQpjb21wdXRlX3NfbiA8LSBmdW5jdGlvbihuKXsKICB4IDwtIDE6bgogIGRhdGFfZnJhbWUobiA9IG4sIHNfbiA9IHN1bSh4KSwgc19uXzIgPSBzdW0oeCkpCn0KbiA8LSAxOjEwMAptYXBfZGYobiwgY29tcHV0ZV9zX24pCmBgYA==</div>
 
 
 
