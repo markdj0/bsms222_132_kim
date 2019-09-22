@@ -526,9 +526,9 @@ between(x, a, b)
 1. Load the `murders` dataset. Which of the following is true?
 
   A. `murders` is in tidy format and is stored in a tibble.  
-  B. `murders` is in tidy format and is stored in a data frame.
-  C. `murders` is not in tidy format and is stored in a tibble.
-  D. `murders` is not in tidy format and is stored in a data frame.
+  B. `murders` is in tidy format and is stored in a data frame.  
+  C. `murders` is not in tidy format and is stored in a tibble.  
+  D. `murders` is not in tidy format and is stored in a data frame.  
 
 `answer: B`
 
