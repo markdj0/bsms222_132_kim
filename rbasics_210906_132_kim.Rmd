@@ -1,6 +1,10 @@
 ---
 output: html_notebook
 ---
+```{r}
+library(rmarkdown)
+library(knitr)
+```
 
 # Chapter 2 R basics
 
@@ -10,11 +14,11 @@ In this book, we will be using the R software environment for all our analysis. 
 
 Imagine you live in Europe and are offered a job in a US company with many locations across all states. It is a great job, but news with headlines such as **US Gun Homicide Rate Higher Than Other Developed Countries** have you worried. Charts like this may concern you even more:
 
-!(https://rafalab.github.io/dsbook/book_files/figure-html/murder-rate-example-1-1.png)
+! (https://rafalab.github.io/dsbook/book_files/figure-html/murder-rate-example-1-1.png)
 
 Or even worse, this version from [everytown.org](https://everytownresearch.org/):
 
-!(https://rafalab.github.io/dsbook/book_files/figure-html/murder-rate-example-2-1.png)
+! (https://rafalab.github.io/dsbook/book_files/figure-html/murder-rate-example-2-1.png)
 
 But then you remember that the US is a large and diverse country with 50 very different states as well as the District of Columbia (DC).
 
