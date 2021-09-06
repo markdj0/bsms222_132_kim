@@ -1,10 +1,7 @@
 ---
 output: html_notebook
 ---
-```{r}
-library(rmarkdown)
-library(knitr)
-```
+
 
 # Chapter 2 R basics
 
