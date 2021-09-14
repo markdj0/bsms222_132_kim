@@ -1,5 +1,6 @@
 ---
-output: html_notebook
+output: html_notebook:
+      df_print: paged
 ---
 # Chapter 4 The tidyverse
 
@@ -61,6 +62,7 @@ c. `co2` is not tidy: it is a matrix instead of a data frame.
 d. `co2` is not tidy: to be tidy we would have to wrangle it to have three columns (year, month and value), then each co2 observation would have a row.
 ```{r}
 co2
+#정렬X
 ```
 
 **Answer: D**
@@ -310,6 +312,7 @@ filter(murders, region %in% c("Northeast", "West") & rate < 1) %>%
   select(state, rate, rank)
 ```
 
+
 2. Reset `murders` to the original table by using `data(murders)`. Use a pipe to create a new data frame called `my_states` that considers only states in the Northeast or West which have a murder rate lower than 1, and contains only the state, rate and rank columns. The pipe should also have four components separated by three `%>%`. The code should look something like this:
 ```{r}
 my_states <- murders %>%
@@ -317,7 +320,7 @@ my_states <- murders %>%
   filter SOMETHING %>%
   select SOMETHING %>%
 ```
-
+ 
 ```{r}
 data(murders)
 my_states <- murders %>%
