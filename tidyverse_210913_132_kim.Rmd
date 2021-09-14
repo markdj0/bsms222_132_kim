@@ -1,7 +1,5 @@
 ---
-output:
-  html_document:
-    df_print: paged
+output: html_notebook
 ---
 # Chapter 4 The tidyverse
 
@@ -96,12 +94,12 @@ BOD
 
 4. Which of the following built-in datasets is tidy (you can pick more than one):
 
-A. `BJsales`  
-B. `EuStockMarkets`  
-C. `DNase`
-D. `Formaldehyde`
-E. `Orange`
-F. `UCBAdmissions`
+a. `BJsales`  
+b. `EuStockMarkets`  
+c. `DNase`
+d. `Formaldehyde`
+e. `Orange`
+f. `UCBAdmissions`
 ```{r}
 BJsales
 EuStockMarkets
