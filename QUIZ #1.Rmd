@@ -1,0 +1,25 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+d = rio::import("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6015533/bin/NIHMS957592-supplement-1.xlsx")
+
+d
+d$patientAgeAtassessment
+d$PatientAgeAtAssessment
+```{r}
+library(tidyverse)
+d = rio::import("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6015533/bin/NIHMS957592-supplement-1.xlsx")
+levels(as.factor(d$ASD))
+# ASD v non-ASD 이므로 ==Y와 !=Y로 구분하자.
+levels(as.factor(d$Effect))
+# Effect group의 수는 8개이므로 Max <= 8
+ASD <- d %>% filter(ASD == "Y")
+nonASD <- d %>% filter(ASD != "Y")
+levels(as.factor(ASD$Effect))
+nlevels(as.factor(nonASD$Effect))
+d
+d %>% group_by(ASD, Effect) %>% count()
+```
+
