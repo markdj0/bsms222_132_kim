@@ -24,7 +24,7 @@ Another reason **ggplot2** is easy for beginners is that its default behavior is
 
 One limitation is that **ggplot2** is designed to work exclusively with data tables in tidy format (where rows are observations and columns are variables). However, a substantial percentage of datasets that beginners work with are in, or can be converted into, this format. An advantage of this approach is that, assuming that our data is tidy, **ggplot2** simplifies plotting code and the learning of grammar for a variety of plots.
 
-To use **ggplot2** you will have to learn several functions and arguments. These are hard to memorize, so we highly recommend you have the a [ggplot2 sheet cheat](https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf) handy. You can get a copy here: https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf or simply perform an internet search for <e2>??ggplot2 cheat sheet<e2>?<9d>.
+To use **ggplot2** you will have to learn several functions and arguments. These are hard to memorize, so we highly recommend you have the a ggplot2 sheet cheat handy. You can get a copy here: https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf or simply perform an internet search for "ggplot2 cheat sheet."
 
 ## 7.1 The components of a graph
 
