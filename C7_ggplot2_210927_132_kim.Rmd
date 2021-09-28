@@ -6,7 +6,6 @@ editor_options:
   chunk_output_type: inline
 ---
 
-> [Previous](https://markdj0.github.io/bsms222_132_kim/)
 # Chapter 7 ggplot2
 
 Exploratory data visualization is perhaps the greatest strength of R. One can quickly go from idea to data to plot with a unique balance of flexibility and ease. For example, Excel may be easier than R for some plots, but it is nowhere near as flexible. D3.js may be more flexible and powerful than R, but it takes much longer to generate a plot.
