@@ -1,0 +1,33 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+1. Please write the tidyverse code to count the number of classification categories among individuals with "moderate" DD/ID severity.
+
+```{r}
+d %>%
+  filter(`DD/ID severity` == "Moderate") %>%
+  group_by(Classification) %>%
+  count()
+```
+
+
+2. Please write the tidyverse code to show how many individuals diagnosed for IEE and BIS have other features (don't specify the other features, just presence or not).
+
+```{r}
+d %>%
+  filter(Classification %in% c("IEE", "BIS")) %>%
+  filter(OtherFeatures != ".") %>%
+  group_by(Classification, OtherFeatures) %>%
+  count()
+```
+
