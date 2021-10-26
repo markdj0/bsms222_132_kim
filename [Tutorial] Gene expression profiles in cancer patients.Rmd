@@ -80,7 +80,7 @@ You can download the data from [this link](https://www.dropbox.com/s/uuoc725kwjn
 load('data.TCGA_LUAD_LUSC.gene_expression.Rdata')
 ```
 
-## 3. Explore the input dataset
+# 3. Explore the input dataset
 
 Let’s explore which columns are provided in the LUAD dataset.
 ```{r}
