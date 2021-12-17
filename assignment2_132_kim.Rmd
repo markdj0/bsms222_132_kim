@@ -1,0 +1,230 @@
+---
+title: "Correlation between EGFR mutation and MAPK pathway compared by age and sex"
+output:
+  html_notebook: default
+  pdf_document: default
+---
+
+
+
+##### Korea University, Biosystems and Bio-Medical Science
+
+##### 2018250132 Kim DongJae
+
+## 1. Introduction
+Lung cancer, which is one of the most common cancer in the world, has a lot of theories and papers about what gene or protein mutation is directly lead to it. Due to recent paper 'Proteogenomics of Non-smoking Lung Cancer
+in East Asia Delineates Molecular Signatures
+of Pathogenesis and Progression'(Chen et al., 2020), some of the protein mutations show relevance with lung cancer. Showing the relevance between EGFR mutation and MAPK pathway with mutated proteins is the main point in this portfolio.
+
+## 2. Exploring data
+
+### 2.1. Unboxing your dataset
+```{r}
+library(readxl)
+library(tidyverse)
+library(dslabs)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(ggridges)
+library(viridis)
+library(cowplot)
+library(lemon)
+library(ggpubr)
+```
+
+Let's read out the datas used from 'Proteogenomics of Non-smoking Lung Cancer
+in East Asia Delineates Molecular Signatures
+of Pathogenesis and Progression'(Chen et al., 2020)
+```{r}
+S1A = read_excel('1-s2.0-S0092867420307431-mmc1.xlsx', sheet=2, na="NA")
+S1G = read_excel('1-s2.0-S0092867420307431-mmc1.xlsx', sheet=8, na="NA")
+S2E = read_excel('Table_S2.xlsx', sheet=6, na="NA")
+```
+
+From data S2E, we can see that these are related to MAPK pathway:
+```{r paged.print=FALSE}
+S2E %>%
+  filter(`Gene name` %in% c("MAP2K2", "MAPK1", "MAPK3"))
+```
+
+So in this portfolio, I'll be looking into these 4 proteins' relation between EGFR mutation by Age and Sex.
+
+### 2.2 Data reconstruction
+
+As I mentioned, we'll be using upper 4 proteins so let's mutate our dataset!
+```{r}
+S1G <- t(S1G)
+colnames(S1G) <- S1G[1,]
+S1G <- S1G[-1,]
+S1G <- cbind(ID = rownames(S1G), S1G)
+rownames(S1G) <- 1:nrow(S1G)
+S1AG <- merge(S1A, S1G)
+S1AG_s <- S1AG %>% select("ID","Proteome_Batch","Gender","Age","Smoking Status","Histology Type","Stage","EGFR_Status","Primary Tumor Location","P36507 1xPhospho [T394]", "P28482 2xPhospho [T185;T190]", "P28482 1xPhospho [T190]", "P27361 1xPhospho [T202]")
+S1AG_s$`P36507 1xPhospho [T394]` <- as.numeric(S1AG_s$`P36507 1xPhospho [T394]`, na.rm=TRUE)
+S1AG_s$`P28482 2xPhospho [T185;T190]` <- as.numeric(S1AG_s$`P28482 2xPhospho [T185;T190]`, na.rm=TRUE)
+S1AG_s$`P28482 1xPhospho [T190]` <- as.numeric(S1AG_s$`P28482 1xPhospho [T190]`, na.rm=TRUE)
+S1AG_s$`P27361 1xPhospho [T202]` <- as.numeric(S1AG_s$`P27361 1xPhospho [T202]`, na.rm=TRUE)
+```
+
+
+## 3. Data Visualization
+
+### 3.1 Figure 1
+
+Since we found 4 proteins related to MAPK pathway, let's check their relevance with whether EGFR mutation has occured or not.
+```{r}
+S1AG_s3 <- S1AG_s %>%
+  mutate(`EGFR_mut` = case_when(EGFR_Status != "WT" ~ "Y",
+                                     EGFR_Status == "WT" ~ "N"))
+
+vgp2_1 <- S1AG_s3 %>%
+  ggplot(aes(Gender, `P36507 1xPhospho [T394]`)) +
+  geom_violin(aes(col=Gender)) +
+  geom_point(alpha = 0.4, size = 1) +
+  facet_grid(.~EGFR_mut) +
+  labs(y = "T394", x = "Sex")
+vgp2_2 <- S1AG_s3 %>%
+  ggplot(aes(Gender, `P28482 2xPhospho [T185;T190]`)) +
+  geom_violin(aes(col=Gender)) +
+  geom_point(alpha = 0.4, size = 1) +
+  facet_grid(.~EGFR_mut) +
+  labs(y = "T185;T190", x = "Sex")
+vgp2_3 <- S1AG_s3 %>%
+  ggplot(aes(Gender, `P28482 1xPhospho [T190]`)) +
+  geom_violin(aes(col=Gender)) +
+  geom_point(alpha = 0.4, size = 1) +
+  facet_grid(.~EGFR_mut) +
+  labs(y = "T190", x = "Sex")
+vgp2_4 <- S1AG_s3 %>%
+  ggplot(aes(Gender, `P27361 1xPhospho [T202]`)) +
+  geom_violin(aes(col=Gender)) +
+  geom_point(alpha = 0.4, size = 1) +
+  facet_grid(.~EGFR_mut) +
+  labs(y = "T202", x = "Sex")
+nt <- theme(legend.position='none')
+grid_arrange_shared_legend(vgp2_1, vgp2_2+nt, vgp2_3+nt, vgp2_4+nt, ncol=2, nrow=2)
+```
+
+As you can see from Figure 1 plot, each proteins shows tendency of higher median log(T/N) value when there's mutation on EGFR(EGFR_mut = 'Y') than wild type(EGFR_mut = 'N'). 
+
+### 3.2 Figure 2
+Let's now compare log(T/N) on Age and Sex who have EGFR mutation (exon19del, L858R). 
+```{r}
+egg1 <- S1AG_s3 %>%
+  filter(EGFR_Status %in% c("exon19del","L858R")) %>%
+  ggplot(aes(Age, `P36507 1xPhospho [T394]`)) +
+  geom_point(color = "lightgray") +
+  stat_density_2d(aes(fill = stat(y)), geom = "polygon") +
+  scale_fill_gradientn(colors = c("#FFEDA0", "#FEB24C", "#F03B20"), name = "log2T/N") +
+  facet_wrap(~Gender)+
+  theme_bw() +
+  labs(y = "T394", x = "Age")
+egg2 <- S1AG_s3 %>%
+  filter(EGFR_Status %in% c("exon19del","L858R")) %>%
+  ggplot(aes(Age, `P28482 2xPhospho [T185;T190]`)) +
+  geom_point(color = "lightgray") +
+  stat_density_2d(aes(fill = stat(y)), geom = "polygon") +
+  scale_fill_gradientn(colors = c("#FFEDA0", "#FEB24C", "#F03B20"), name = "log2T/N") +
+  facet_wrap(~Gender) +
+  theme_bw() +
+  labs(y = "T185;T190", x = "Age")
+egg3 <- S1AG_s3 %>%
+  filter(EGFR_Status %in% c("exon19del","L858R")) %>%
+  ggplot(aes(Age,`P28482 1xPhospho [T190]`)) +
+  geom_point(color = "lightgray") +
+  stat_density_2d(aes(fill = stat(y)), geom = "polygon") +
+  scale_fill_gradientn(colors = c("#FFEDA0", "#FEB24C", "#F03B20"), name = "log2T/N")+
+  facet_wrap(~Gender) +
+  theme_bw() +
+  labs(y = "T190", x = "Age")
+egg4 <- S1AG_s3 %>%
+  filter(EGFR_Status %in% c("exon19del","L858R")) %>%
+  ggplot(aes(Age,`P27361 1xPhospho [T202]`)) +
+  geom_point(color = "lightgray") +
+  stat_density_2d(aes(fill = stat(y)), geom = "polygon") +
+  scale_fill_gradientn(colors = c("#FFEDA0", "#FEB24C", "#F03B20"), name = "log2T/N")+
+  facet_wrap(~Gender) +
+  theme_bw() +
+  labs(y = "T202", x = "Age")
+grid_arrange_shared_legend(egg1, egg2+nt, egg3+nt, egg4+nt, ncol=2, nrow=2, position="right")
+```   
+
+In this plot, 3 out of 4 proteins show significant spots which in common are having 'old age'-'huge log(T/N)' on man only. But in other spots, there are no significant defference between Female and Male.
+
+## 4. Discussion
+
+According to the figures, there are some spots that are relative such as: Medians of log(T/N) from mutated EGFR are higher than wild type, specific part of the graphs are similarly gathered, etc.
+However, rest part of the graphs are showing too small difference each other. Also, the samples of patient were too small to generalize the result of the plot. If the datas were more abundant, these plots would've shown different and better results to judge whether this is relevant or not.
+
+
+# 5. Peer Review Feedback
+
+## 5.1. Feedbacks and responses
+
+There were some points that people have pointed out.
+
+0. What is 'egg' from code of figure 2?
+
+I just named this code as 'egg' because this plot looks like fried egg (no cap). Would've been better if I wrote that down.
+
+1. Y-axis from figure 2 was hard to understand.
+
+That's right because... looks like I made a mistake on binding legends into one.
+
+Surprisingly, the 'color' and y-axis meant the same thing, logT/N.
+
+(But then why do their color differs?)
+That's because I used the legend from 'egg1' but I found out that each of the egg's legend differs so this made things the plot look awkward.
+
+2. Why did you choose “MAP2K2”, “MAPK1”, and “MAPK3” specifically?
+
+When you look at data S2E, you can see there are 3 type of gene names that looks related to MAPK pathway. That's why I used these for the plot.
+
+## 5.2. Modified plot
+
+This time, I'm going to use `geom_smooth` to show the relevance between Age and logT/N with whether there is a EGFR mutation.
+
+```{r}
+plot_grid(
+  ggdraw() +
+    draw_label(
+      "Correlation between logT/N value and EGFR mutation with Age",
+      fontface = 'bold',
+      x = 0,
+      hjust = 0
+    ) +
+    theme(
+      plot.margin = margin(0, 0, 0, 7)
+    ),
+  plot_grid(S1AG_s3 %>%
+              ggplot(aes(Age, `P36507 1xPhospho [T394]`)) +
+              geom_smooth(method = lm) +
+              geom_point(alpha = 0.2) +
+              facet_wrap(~EGFR_mut) +
+              labs(y = "T394"),
+            S1AG_s3 %>%
+              ggplot(aes(Age, `P28482 2xPhospho [T185;T190]`)) +
+              geom_smooth(method = lm) +
+              geom_point(alpha = 0.2) +
+              facet_wrap(~EGFR_mut) +
+              labs(y = "T185;T190"),
+            S1AG_s3 %>%
+              ggplot(aes(Age, `P28482 1xPhospho [T190]`)) +
+              geom_smooth(method = lm) +
+              geom_point(alpha = 0.2) +
+              facet_wrap(~EGFR_mut) +
+              labs(y = "T190"),
+            S1AG_s3 %>%
+              ggplot(aes(Age, `P27361 1xPhospho [T202]`)) +
+              geom_smooth(method = lm) +
+              geom_point(alpha = 0.2) +
+              facet_wrap(~EGFR_mut) +
+              labs(y = "T202")),
+  ncol = 1,
+  rel_heights = c(0.1, 1))
+```
+
+## 5.3. Discussion
+
+When you look at this plot, You can easily find out the difference from whether there is EGFR mutation or not. T394 and T185;190 shows that mostly patients with EGFR mutation shows higher value of logT/N. T190 and T202 shows that logT/N value of WT is getting higher when patient's age got older, and logT/N value of patients with mutation is getting lower when patient's age got older.
